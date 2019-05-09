@@ -9,4 +9,5 @@ import (
 func ConfigRoutes(s *webmvc.NewServer) {
 	s.Routes.RegisterRoute("/index", &controllers.Index{})
 	s.Routes.RegisterRoute("/hello", &controllers.Hello{})
+	s.Routes.RegisterRoute("/listings", &controllers.Listing{})
 }
