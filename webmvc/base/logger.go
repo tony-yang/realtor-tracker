@@ -43,6 +43,6 @@ func Error(v ...interface{}) {
 
 func Critical(v ...interface{}) {
 	if level <= LevelCritical {
-		MVCLogger.Print("[Critical] %v\n", v)
+		MVCLogger.Printf("[Critical] %v\n", v)
 	}
 }

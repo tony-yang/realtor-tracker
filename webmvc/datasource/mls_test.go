@@ -285,6 +285,7 @@ func TestParseJsonResults(t *testing.T) {
 				PublicRemarks: "HOUSE DESCRIPTION",
 				Stories:       "NA",
 				PropertyType:  "Single Family",
+				ListTimestamp: "123456789",
 			},
 		}
 		tester.AssertStringEqual(t, result[0].Address, wanted[0].Address)

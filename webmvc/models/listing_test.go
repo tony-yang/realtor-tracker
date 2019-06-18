@@ -29,6 +29,7 @@ func TestFetchMlsListing(t *testing.T) {
 			PublicRemarks: "HOUSE DESCRIPTION",
 			Stories:       "1.5",
 			PropertyType:  "House",
+			ListTimestamp: "123456789",
 		}
 		wantedResult, err := json.Marshal(wanted)
 		if err != nil {
