@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"webmvc/base"
@@ -14,17 +15,21 @@ type Listing struct {
 
 func (l *Listing) Get(subpath string, queries map[string]string) *base.HttpResponse {
 	fmt.Println("subpath =", subpath, "queries =", queries)
-	bodyContent, statusCode, err := l.FetchMlsListing(subpath)
+	bodyContent, err := l.ReadListing(subpath)
+	statusCode := http.StatusOK
 	if err != nil {
 		base.Error("error fetch mls listing:", err)
-		if statusCode != http.StatusInternalServerError {
-			statusCode = http.StatusInternalServerError
-		}
+		statusCode = http.StatusInternalServerError
 	}
 
-	response := &base.HttpResponse{
-		Body:       bodyContent,
+	body, err := json.Marshal(bodyContent)
+	if err != nil {
+		body = []byte{}
+		statusCode = http.StatusInternalServerError
+	}
+
+	return &base.HttpResponse{
+		Body:       string(body),
 		StatusCode: statusCode,
 	}
-	return response
 }
