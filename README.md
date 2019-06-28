@@ -15,3 +15,7 @@ A Golang MVC framework used to serve the information.
 
 ## Dev Guide
 Run `make test` to test the code before commit.
+To run a long-live dev environment
+```
+docker run -v <absolute path to>/realtor-tracker:/go/src -p 9999:80 -it --rm realtor-tracker bash
+```
