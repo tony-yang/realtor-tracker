@@ -11,9 +11,8 @@ RUN apt-get update \
 
 WORKDIR /go/src
 
-ADD . /go/src
+ADD . /go/src/github.com/tony-yang/realtor-tracker
 
-RUN go get -u github.com/mattn/go-sqlite3 \
- && go get -u google.golang.org/grpc
+ENV GO111MODULE=on
 
 EXPOSE 80

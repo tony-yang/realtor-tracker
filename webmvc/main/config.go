@@ -1,8 +1,8 @@
 package main
 
 import (
-	"webmvc"
-	"webmvc/controllers"
+	"github.com/tony-yang/realtor-tracker/webmvc"
+	"github.com/tony-yang/realtor-tracker/webmvc/controllers"
 )
 
 // ConfigRoutes configures the routes with the corresponding controller

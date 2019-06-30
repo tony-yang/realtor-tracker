@@ -12,3 +12,6 @@
 *.out
 
 github.com
+
+# Bazel output
+bazel-*

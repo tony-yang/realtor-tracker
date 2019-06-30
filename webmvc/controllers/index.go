@@ -2,7 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"webmvc/base"
+	
+	"github.com/tony-yang/realtor-tracker/webmvc/base"
 )
 
 type Index struct {

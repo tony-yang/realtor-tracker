@@ -2,8 +2,9 @@ package main
 
 import (
 	"net/http"
-	"webmvc"
-	"webmvc/base"
+
+	"github.com/tony-yang/realtor-tracker/webmvc"
+	"github.com/tony-yang/realtor-tracker/webmvc/base"
 )
 
 func main() {

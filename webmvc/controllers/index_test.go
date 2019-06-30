@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"webmvc"
-	"webmvc/controllers"
-	"webmvc/tester"
+
+	"github.com/tony-yang/realtor-tracker/webmvc"
+	"github.com/tony-yang/realtor-tracker/webmvc/controllers"
+	"github.com/tony-yang/realtor-tracker/webmvc/tester"
 )
 
 func TestIndex(t *testing.T) {

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"webmvc/base"
+	"github.com/tony-yang/realtor-tracker/webmvc/base"
 )
 
 type Hello struct {

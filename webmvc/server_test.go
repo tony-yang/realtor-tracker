@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"webmvc"
-	"webmvc/base"
-	"webmvc/tester"
+
+	"github.com/tony-yang/realtor-tracker/webmvc"
+	"github.com/tony-yang/realtor-tracker/webmvc/base"
+	"github.com/tony-yang/realtor-tracker/webmvc/tester"
 )
 
 func TestServer(t *testing.T) {

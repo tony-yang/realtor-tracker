@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"webmvc/base"
-	"webmvc/models"
+
+	"github.com/tony-yang/realtor-tracker/webmvc/base"
+	"github.com/tony-yang/realtor-tracker/webmvc/models"
 )
 
 type Listing struct {
