@@ -1,0 +1,23 @@
+package (default_visibility = ["//visibility:public"])
+
+protoc = "@com_google_protobuf//:protoc"
+
+protoc_gen_go = "@com_github_golang_protobuf//protoc-gen-go"
+
+protoc_grpc = "plugins=grpc"
+
+sh_binary(
+  name = "update-protos",
+  srcs = ["update-protos.sh"],
+  args = [
+    "$(location %s)" % protoc,
+    "$(location %s)" % protoc_gen_go,
+    protoc_grpc,
+  ],
+  data = [
+    "//:all-srcs",
+    protoc,
+    protoc_gen_go,
+  ],
+  tags = ["local"],
+)

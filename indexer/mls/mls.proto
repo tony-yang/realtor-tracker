@@ -1,0 +1,31 @@
+syntax = "proto3";
+package mls;
+
+service MlsService {
+  rpc GetListing(PropertyID) returns (Listings) {}
+}
+
+message Property {
+	string address = 1;
+	string bathrooms = 2;
+	string bedrooms = 3;
+	string land_size = 4;
+	string mls_id = 5;
+	string mls_number = 6;
+	string mls_url = 7;
+	string parking = 8;
+	string photo_url = 9;
+	string price = 10;
+	string public_remarks = 11;
+	string stories = 12;
+	string property_type = 13;
+	string list_timestamp = 14;
+}
+
+message Listings {
+  repeated Property property = 1;
+}
+
+message PropertyID {
+  int32 id = 1;
+}
