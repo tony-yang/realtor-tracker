@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	
+
 	"github.com/tony-yang/realtor-tracker/webmvc/base"
 )
 

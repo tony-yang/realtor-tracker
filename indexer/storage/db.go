@@ -3,28 +3,28 @@ package storage
 import (
 	"database/sql"
 	"fmt"
-	"time"  
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 )
 
 type DB struct {
-  db *sql.DB
+	db *sql.DB
 }
 
-func NewDBStorage() (*sql.DB, error){
-  database, err := sql.Open("sqlite3", "/tmp/realtor.db")
+func NewDBStorage() (*sql.DB, error) {
+	database, err := sql.Open("sqlite3", "/tmp/realtor.db")
 	if err != nil {
 		logrus.Fatalf("failed to create a new database: %v", err)
-    return nil, err
+		return nil, err
 	}
 
-  return DB{database}, nil
+	return DB{database}, nil
 }
 
 func (d *DB) CreateStorage() error {
-  statement, err := d.db.Prepare(`CREATE TABLE IF NOT EXISTS listingStatus (
+	statement, err := d.db.Prepare(`CREATE TABLE IF NOT EXISTS listingStatus (
 		statusId INTEGER PRIMARY KEY,
 		status TEXT)`)
 	if err != nil {
@@ -92,8 +92,8 @@ func (d *DB) CreateStorage() error {
 }
 
 func (d *DB) SaveNewListing(listings map[string]Listing) error {
-	if err := d.CreateStorage(), err != nil {
-		return fmt.Errorf("failed to create DB: %s", err )
+	if err := d.CreateStorage(); err != nil {
+		return fmt.Errorf("failed to create DB: %s", err)
 	}
 
 	for mlsNumber, listing := range listings {

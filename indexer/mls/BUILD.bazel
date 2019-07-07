@@ -1,46 +1,35 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
-
-proto_library(
-    name = "mls_proto",
-    srcs = ["mls.proto"],
-    visibility = ["//visibility:public"],
-)
-
-go_proto_library(
-    name = "mls_go_proto",
-    compilers = ["@io_bazel_rules_go//proto:go_grpc"],
-    importpath = "github.com/tony-yang/realtor-tracker/indexer/mls",
-    proto = ":mls_proto",
-    visibility = ["//visibility:public"],
-)
 
 go_library(
     name = "go_default_library",
-    embed = [":mls_go_proto"],
+    srcs = ["mls.pb.go"],
     importpath = "github.com/tony-yang/realtor-tracker/indexer/mls",
     visibility = ["//visibility:public"],
-)
-
-filegroup(
-  name="package-srcs",
-  srcs = glob(
-    ["**"],
-    exclude = [
-      "bazel-*/**",
-      ".git/**",
-      "*.db",
-      "*.gz",
+    deps = [
+        "@com_github_golang_protobuf//proto:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
     ],
-  ),
-  visibility = ["//visibility:private"],
 )
 
 filegroup(
-  name = "all-srcs",
-  srcs = [
-    ":package-srcs",
-  ],
-  tags = ["automanaged"],
-  visibility = ["//visibility:public"],
+    name = "package-srcs",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "bazel-*/**",
+            ".git/**",
+            "*.db",
+            "*.gz",
+        ],
+    ),
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

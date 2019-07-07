@@ -1,7 +1,5 @@
 package base
 
-import ()
-
 // HttpResponse defines the response data structure
 type HttpResponse struct {
 	Body       string

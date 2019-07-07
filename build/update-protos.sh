@@ -34,6 +34,7 @@ echo
 for p in $(find . -name '*.proto' -not -path './vendor/*'); do
   echo -n "$p "
   echo
+  genproto "$p"
 done
 echo -n "Update proto done" >&2
 echo

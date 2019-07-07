@@ -1,9 +1,9 @@
 package base_test
 
 import (
-	"testing"
 	"github.com/tony-yang/realtor-tracker/webmvc/base"
 	"github.com/tony-yang/realtor-tracker/webmvc/tester"
+	"testing"
 )
 
 var routes *base.Routes

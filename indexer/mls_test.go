@@ -3,6 +3,8 @@ package indexer
 import (
 	"strings"
 	"testing"
+
+	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 )
 
 func TestParseJsonResults(t *testing.T) {
@@ -77,8 +79,8 @@ func TestParseJsonResults(t *testing.T) {
       "GroupingLevel": "8"
     }`)
 		result, _ := ParseJsonResults(respContent)
-		wanted := []Listing{
-			Listing{
+		wanted := []mlspb.Property{
+			{
 				Address:       "1234 street|city, province A0B1C2",
 				Bathrooms:     "1",
 				Bedrooms:      "3 + 0",
@@ -177,8 +179,8 @@ func TestParseJsonResults(t *testing.T) {
       "GroupingLevel": "8"
     }`)
 		result, _ := ParseJsonResults(respContent)
-		wanted := []Listing{
-			Listing{
+		wanted := []mlspb.Property{
+			{
 				Address:       "1234 street|city, province A0B1C2",
 				Bathrooms:     "1",
 				Bedrooms:      "3 + 0",
@@ -268,8 +270,8 @@ func TestParseJsonResults(t *testing.T) {
       "GroupingLevel": "8"
     }`)
 		result, _ := ParseJsonResults(respContent)
-		wanted := []Listing{
-			Listing{
+		wanted := []mlspb.Property{
+			{
 				Address:       "1234 street|city, province A0B1C2",
 				Bathrooms:     "1",
 				Bedrooms:      "3 + 0",

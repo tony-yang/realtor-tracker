@@ -2,6 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/tony-yang/realtor-tracker/indexer
+# gazelle:proto disable_global
 gazelle(
     name = "gazelle",
 )
@@ -21,28 +22,29 @@ go_test(
     name = "go_default_test",
     srcs = ["mls_test.go"],
     embed = [":go_default_library"],
+    deps = ["//mls:go_default_library"],
 )
 
 filegroup(
-  name="package-srcs",
-  srcs = glob(
-    ["**"],
-    exclude = [
-      "bazel-*/**",
-      ".git/**",
-      "*.db",
-      "*.gz",
+    name = "package-srcs",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "bazel-*/**",
+            ".git/**",
+            "*.db",
+            "*.gz",
+        ],
+    ),
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//indexer/mls:all-srcs",
     ],
-  ),
-  visibility = ["//visibility:private"],
-)
-
-filegroup(
-  name = "all-srcs",
-  srcs = [
-    ":package-srcs",
-    "//indexer/mls:all-srcs"
-  ],
-  tags = ["automanaged"],
-  visibility = ["//visibility:public"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

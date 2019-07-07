@@ -27,5 +27,5 @@ message Listings {
 }
 
 message PropertyID {
-  int32 id = 1;
+  string id = 1;
 }
