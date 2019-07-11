@@ -2,7 +2,7 @@ syntax = "proto3";
 package mls;
 
 service MlsService {
-  rpc GetListing(PropertyID) returns (Listings) {}
+  rpc GetListing(Request) returns (Listings) {}
 }
 
 message Property {
@@ -26,6 +26,6 @@ message Listings {
   repeated Property property = 1;
 }
 
-message PropertyID {
-  string id = 1;
+message Request {
+  string property_id = 1;
 }

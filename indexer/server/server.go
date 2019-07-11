@@ -1,3 +1,5 @@
+// Package main implements a gRPC indexer server that will serve the collected
+// data to the client in a standardized format defined by the proto.
 package main
 
 import (
@@ -5,9 +7,8 @@ import (
 	"fmt"
 	"net"
 
+  "github.com/sirupsen/logrus"
 	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
-
-	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"
 )
@@ -18,7 +19,8 @@ var (
 
 type indexerServer struct{}
 
-func (s *indexerServer) GetListing(ctx context.Context, pid *mlspb.PropertyID) (*mlspb.Listings, error) {
+func (s *indexerServer) GetListing(ctx context.Context, r *mlspb.Request) (*mlspb.Listings, error) {
+	logrus.Println("Request =", r)
 	listings := &mlspb.Listings{}
 	p := &mlspb.Property{
 		Address:       "1234 street|city, province A0B1C2",

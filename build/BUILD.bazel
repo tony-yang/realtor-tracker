@@ -1,23 +1,40 @@
 package (default_visibility = ["//visibility:public"])
 
-protoc = "@com_google_protobuf//:protoc"
+PROTOC = "@com_google_protobuf//:protoc"
 
-protoc_gen_go = "@com_github_golang_protobuf//protoc-gen-go"
+PROTOC_GEN_GO = "@com_github_golang_protobuf//protoc-gen-go"
 
-protoc_grpc = "plugins=grpc"
+PROTOC_GRPC = "plugins=grpc"
 
 sh_binary(
   name = "update-protos",
   srcs = ["update-protos.sh"],
   args = [
-    "$(location %s)" % protoc,
-    "$(location %s)" % protoc_gen_go,
-    protoc_grpc,
+    "$(location %s)" % PROTOC,
+    "$(location %s)" % PROTOC_GEN_GO,
+    PROTOC_GRPC,
   ],
   data = [
     "//:all-srcs",
-    protoc,
-    protoc_gen_go,
+    PROTOC,
+    PROTOC_GEN_GO,
   ],
   tags = ["local"],
+)
+
+GAZELLE = "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
+
+KAZEL = "//vendor/k8s.io/repo-infra/kazel"
+
+sh_binary(
+  name = "update-bazel",
+  srcs = ["update-bazel.sh"],
+  args = [
+    "$(location %s)" % GAZELLE,
+    "$(location %s)" % KAZEL,
+  ],
+  data = [
+    GAZELLE,
+    KAZEL,
+  ],
 )
