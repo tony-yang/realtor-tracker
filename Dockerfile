@@ -9,6 +9,8 @@ RUN apt-get update \
     bazel \
     patch
 
+RUN go get k8s.io/repo-infra/kazel
+
 WORKDIR /go/src
 
 ADD . /go/src/github.com/tony-yang/realtor-tracker

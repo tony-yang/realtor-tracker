@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 
-  "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 
 	"google.golang.org/grpc"

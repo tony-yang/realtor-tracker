@@ -7,6 +7,9 @@ if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then
 elif ! command -v bazel &>/dev/null; then
   echo "Install bazel >&2"
   exit 1
+elif ! command -v kazel &>/dev/null; then
+  echo "Install kazel >&2"
+  exit 1
 else
   (
     set -o xtrace
@@ -15,10 +18,7 @@ else
   exit 0
 fi
 
-gazelle=$(realpath "$1")
-kazel=$(realpath "$2")
-
 cd "${BUILD_WORKSPACE_DIRECTORY}"
 
-"$gazelle" fix --externanl=vendored
-"$kazel" --cfg-path=./build/.kazelcfg.json
+bazel run :gazelle -- fix -external=vendored
+kazel --cfg-path=./build/.kazelcfg.json

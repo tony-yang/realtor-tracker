@@ -14,19 +14,21 @@ An offline data analysis component that process some basic statistical analysis 
 A Golang MVC framework used to serve the information.
 
 ## Dev Guide
-Run `make test` to test the code before commit.
+Run `make test` and `cd build && make` to test and format the code before commit.
 
 To run a long-live dev environment
 ```
 docker run -v <absolute path to>/realtor-tracker:/go/src/github.com/<org>/realtor-tracker -p 9999:80 -it --rm realtor-tracker bash
 ```
 
-To develop in the long-live dev container, make sure to add any new dependency in go.mod of the corresponding directory manually or by running the go command, and then run bazel.
+To develop in the long-live dev container, make sure to add any new dependency in the source code, and run the `build` directory's Makefile to update the go module and the workspace. Then run the build script that updates bazel and protos. Finally, run the application for manual testing.
 ```
-cd <the directory to test>
-go test ./ # This automatically adds new dependency to go.mod
-# or manually add new dependency to go.mod
-bazel run //:gazelle -- update-repos -from_file=go.mod
+cd realtor-tracker/build
+make
+./update-bazel.sh
+./update-protos.sh
+
+# Run the application for manual testing
 ```
 
-Also remember to run `go mod tidy` to clean up.
+Note: The build Makefile will automatically run the `go mod tidy` to clean up any unused go package from the go module.

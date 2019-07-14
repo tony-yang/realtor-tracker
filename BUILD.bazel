@@ -1,23 +1,33 @@
-filegroup(
-  name="package-srcs",
-  srcs = glob(
-    ["**"],
-    exclude = [
-      "bazel-*/**",
-      ".git/**",
-      "*.db",
-      "*.gz",
-    ],
-  ),
-  visibility = ["//visibility:private"],
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/tony-yang/realtor-tracker
+# gazelle:proto disable_global
+# gazelle:exclude webmvc
+# gazelle:exclude build
+gazelle(
+    name = "gazelle",
 )
 
 filegroup(
-  name = "all-srcs",
-  srcs = [
-    ":package-srcs",
-    "//indexer:all-srcs",
-  ],
-  tags = ["automanaged"],
-  visibility = ["//visibility:public"],
+    name = "package-srcs",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "bazel-*/**",
+            ".git/**",
+            "*.db",
+            "*.gz",
+        ],
+    ),
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//indexer:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

@@ -30,3 +30,153 @@ go_repository(
     importpath = "github.com/golang/protobuf",
     tag = "v1.3.1",
 )
+
+go_repository(
+    name = "co_honnef_go_tools",
+    commit = "c2f93a96b099",
+    importpath = "honnef.co/go/tools",
+)
+
+go_repository(
+    name = "com_github_burntsushi_toml",
+    importpath = "github.com/BurntSushi/toml",
+    tag = "v0.3.1",
+)
+
+go_repository(
+    name = "com_github_client9_misspell",
+    importpath = "github.com/client9/misspell",
+    tag = "v0.3.4",
+)
+
+go_repository(
+    name = "com_github_davecgh_go_spew",
+    importpath = "github.com/davecgh/go-spew",
+    tag = "v1.1.1",
+)
+
+go_repository(
+    name = "com_github_golang_glog",
+    commit = "23def4e6c14b",
+    importpath = "github.com/golang/glog",
+)
+
+go_repository(
+    name = "com_github_golang_mock",
+    importpath = "github.com/golang/mock",
+    tag = "v1.1.1",
+)
+
+go_repository(
+    name = "com_github_google_go_cmp",
+    importpath = "github.com/google/go-cmp",
+    tag = "v0.2.0",
+)
+
+go_repository(
+    name = "com_github_konsorten_go_windows_terminal_sequences",
+    importpath = "github.com/konsorten/go-windows-terminal-sequences",
+    tag = "v1.0.1",
+)
+
+go_repository(
+    name = "com_github_mattn_go_sqlite3",
+    importpath = "github.com/mattn/go-sqlite3",
+    tag = "v1.10.0",
+)
+
+go_repository(
+    name = "com_github_pmezard_go_difflib",
+    importpath = "github.com/pmezard/go-difflib",
+    tag = "v1.0.0",
+)
+
+go_repository(
+    name = "com_github_sirupsen_logrus",
+    importpath = "github.com/sirupsen/logrus",
+    tag = "v1.4.2",
+)
+
+go_repository(
+    name = "com_github_stretchr_objx",
+    importpath = "github.com/stretchr/objx",
+    tag = "v0.1.1",
+)
+
+go_repository(
+    name = "com_github_stretchr_testify",
+    importpath = "github.com/stretchr/testify",
+    tag = "v1.2.2",
+)
+
+go_repository(
+    name = "com_google_cloud_go",
+    importpath = "cloud.google.com/go",
+    tag = "v0.26.0",
+)
+
+go_repository(
+    name = "org_golang_google_appengine",
+    importpath = "google.golang.org/appengine",
+    tag = "v1.1.0",
+)
+
+go_repository(
+    name = "org_golang_google_genproto",
+    commit = "c66870c02cf8",
+    importpath = "google.golang.org/genproto",
+)
+
+go_repository(
+    name = "org_golang_google_grpc",
+    importpath = "google.golang.org/grpc",
+    tag = "v1.21.1",
+)
+
+go_repository(
+    name = "org_golang_x_crypto",
+    commit = "c2843e01d9a2",
+    importpath = "golang.org/x/crypto",
+)
+
+go_repository(
+    name = "org_golang_x_lint",
+    commit = "d0100b6bd8b3",
+    importpath = "golang.org/x/lint",
+)
+
+go_repository(
+    name = "org_golang_x_net",
+    commit = "d8887717615a",
+    importpath = "golang.org/x/net",
+)
+
+go_repository(
+    name = "org_golang_x_oauth2",
+    commit = "d2e6202438be",
+    importpath = "golang.org/x/oauth2",
+)
+
+go_repository(
+    name = "org_golang_x_sync",
+    commit = "1d60e4601c6f",
+    importpath = "golang.org/x/sync",
+)
+
+go_repository(
+    name = "org_golang_x_sys",
+    commit = "953cdadca894",
+    importpath = "golang.org/x/sys",
+)
+
+go_repository(
+    name = "org_golang_x_text",
+    importpath = "golang.org/x/text",
+    tag = "v0.3.0",
+)
+
+go_repository(
+    name = "org_golang_x_tools",
+    commit = "11955173bddd",
+    importpath = "golang.org/x/tools",
+)
