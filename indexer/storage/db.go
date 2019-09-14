@@ -7,20 +7,21 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
+	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 )
 
 type DB struct {
 	db *sql.DB
 }
 
-func NewDBStorage() (*sql.DB, error) {
+func NewDBStorage() (*DB, error) {
 	database, err := sql.Open("sqlite3", "/tmp/realtor.db")
 	if err != nil {
 		logrus.Fatalf("failed to create a new database: %v", err)
 		return nil, err
 	}
 
-	return DB{database}, nil
+	return &DB{db: database}, nil
 }
 
 func (d *DB) CreateStorage() error {
@@ -91,7 +92,7 @@ func (d *DB) CreateStorage() error {
 	return nil
 }
 
-func (d *DB) SaveNewListing(listings map[string]Listing) error {
+func (d *DB) SaveNewListing(listings map[string]*mlspb.Property) error {
 	if err := d.CreateStorage(); err != nil {
 		return fmt.Errorf("failed to create DB: %s", err)
 	}
@@ -140,10 +141,10 @@ func (d *DB) SaveNewListing(listings map[string]Listing) error {
 	return nil
 }
 
-func (d *DB) ReadListing(id string) error {
-
+func (d *DB) ReadListing(id string) (string, error) {
+	return "", nil
 }
 
-func (d *DB) ReadListings() error {
-
+func (d *DB) ReadListings() (string, error) {
+	return "", nil
 }

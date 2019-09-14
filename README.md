@@ -18,7 +18,7 @@ Run `make test` and `cd build && make` to test and format the code before commit
 
 To run a long-live dev environment
 ```
-docker run -v <absolute path to>/realtor-tracker:/go/src/github.com/<org>/realtor-tracker -p 9999:80 -it --rm realtor-tracker bash
+docker run -v <absolute path to>/realtor-tracker:/go/src/github.com/<org>/realtor-tracker -p 9999:80 -itd --rm realtor-tracker bash
 ```
 
 To develop in the long-live dev container, make sure to add any new dependency in the source code, and run the `build` directory's Makefile to update the go module and the workspace. Then run the build script that updates bazel and protos. Finally, run the application for manual testing.
