@@ -13,8 +13,8 @@ message Property {
 	string mls_id = 5;
 	string mls_number = 6;
 	string mls_url = 7;
-	string parking = 8;
-	string photo_url = 9;
+	repeated string parking = 8;
+	repeated string photo_url = 9;
 	string price = 10;
 	string public_remarks = 11;
 	string stories = 12;

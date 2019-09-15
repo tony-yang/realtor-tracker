@@ -79,36 +79,38 @@ func TestParseJsonResults(t *testing.T) {
       "GroupingLevel": "8"
     }`)
 		result, _ := ParseJsonResults(respContent)
-		wanted := []mlspb.Property{
-			{
-				Address:       "1234 street|city, province A0B1C2",
-				Bathrooms:     "1",
-				Bedrooms:      "3 + 0",
-				LandSize:      "0X",
-				MlsId:         "20552312",
-				MlsNumber:     "19016318",
-				MlsUrl:        "/abc/20552312/house",
-				Parking:       "None",
-				PhotoUrl:      "https://picture/listings/high/456.jpg",
-				Price:         "$10,000",
-				PublicRemarks: "HOUSE DESCRIPTION",
-				Stories:       "1.5",
-				PropertyType:  "House",
+		wanted := mlspb.Listings{
+			Property: []*mlspb.Property{
+				{
+					Address:       "1234 street|city, province A0B1C2",
+					Bathrooms:     "1",
+					Bedrooms:      "3 + 0",
+					LandSize:      "0X",
+					MlsId:         "20552312",
+					MlsNumber:     "19016318",
+					MlsUrl:        "/abc/20552312/house",
+					Parking:       []string{"None"},
+					PhotoUrl:      []string{"https://picture/listings/high/456.jpg"},
+					Price:         "$10,000",
+					PublicRemarks: "HOUSE DESCRIPTION",
+					Stories:       "1.5",
+					PropertyType:  "House",
+				},
 			},
 		}
-		AssertStringEqual(t, result[0].Address, wanted[0].Address)
-		AssertStringEqual(t, result[0].Bathrooms, wanted[0].Bathrooms)
-		AssertStringEqual(t, result[0].Bedrooms, wanted[0].Bedrooms)
-		AssertStringEqual(t, result[0].LandSize, wanted[0].LandSize)
-		AssertStringEqual(t, result[0].MlsId, wanted[0].MlsId)
-		AssertStringEqual(t, result[0].MlsNumber, wanted[0].MlsNumber)
-		AssertStringEqual(t, result[0].MlsUrl, wanted[0].MlsUrl)
-		AssertStringEqual(t, result[0].Parking, wanted[0].Parking)
-		AssertStringEqual(t, result[0].PhotoUrl, wanted[0].PhotoUrl)
-		AssertStringEqual(t, result[0].Price, wanted[0].Price)
-		AssertStringEqual(t, result[0].PublicRemarks, wanted[0].PublicRemarks)
-		AssertStringEqual(t, result[0].Stories, wanted[0].Stories)
-		AssertStringEqual(t, result[0].PropertyType, wanted[0].PropertyType)
+		AssertStringEqual(t, result.Property[0].Address, wanted.Property[0].Address)
+		AssertStringEqual(t, result.Property[0].Bathrooms, wanted.Property[0].Bathrooms)
+		AssertStringEqual(t, result.Property[0].Bedrooms, wanted.Property[0].Bedrooms)
+		AssertStringEqual(t, result.Property[0].LandSize, wanted.Property[0].LandSize)
+		AssertStringEqual(t, result.Property[0].MlsId, wanted.Property[0].MlsId)
+		AssertStringEqual(t, result.Property[0].MlsNumber, wanted.Property[0].MlsNumber)
+		AssertStringEqual(t, result.Property[0].MlsUrl, wanted.Property[0].MlsUrl)
+		AssertArrayEqual(t, result.Property[0].Parking, wanted.Property[0].Parking)
+		AssertArrayEqual(t, result.Property[0].PhotoUrl, wanted.Property[0].PhotoUrl)
+		AssertStringEqual(t, result.Property[0].Price, wanted.Property[0].Price)
+		AssertStringEqual(t, result.Property[0].PublicRemarks, wanted.Property[0].PublicRemarks)
+		AssertStringEqual(t, result.Property[0].Stories, wanted.Property[0].Stories)
+		AssertStringEqual(t, result.Property[0].PropertyType, wanted.Property[0].PropertyType)
 	})
 
 	t.Run("can parse result when optional properties not available", func(t *testing.T) {
@@ -179,36 +181,38 @@ func TestParseJsonResults(t *testing.T) {
       "GroupingLevel": "8"
     }`)
 		result, _ := ParseJsonResults(respContent)
-		wanted := []mlspb.Property{
-			{
-				Address:       "1234 street|city, province A0B1C2",
-				Bathrooms:     "1",
-				Bedrooms:      "3 + 0",
-				LandSize:      "0X",
-				MlsId:         "20552312",
-				MlsNumber:     "19016318",
-				MlsUrl:        "/abc/20552312/house",
-				Parking:       "None",
-				PhotoUrl:      "https://picture/listings/high/456.jpg",
-				Price:         "$10,000",
-				PublicRemarks: "HOUSE DESCRIPTION",
-				Stories:       "1.5",
-				PropertyType:  "Single Family",
+		wanted := mlspb.Listings{
+			Property: []*mlspb.Property{
+				{
+					Address:       "1234 street|city, province A0B1C2",
+					Bathrooms:     "1",
+					Bedrooms:      "3 + 0",
+					LandSize:      "0X",
+					MlsId:         "20552312",
+					MlsNumber:     "19016318",
+					MlsUrl:        "/abc/20552312/house",
+					Parking:       []string{"None"},
+					PhotoUrl:      []string{"https://picture/listings/high/456.jpg"},
+					Price:         "$10,000",
+					PublicRemarks: "HOUSE DESCRIPTION",
+					Stories:       "1.5",
+					PropertyType:  "Single Family",
+				},
 			},
 		}
-		AssertStringEqual(t, result[0].Address, wanted[0].Address)
-		AssertStringEqual(t, result[0].Bathrooms, wanted[0].Bathrooms)
-		AssertStringEqual(t, result[0].Bedrooms, wanted[0].Bedrooms)
-		AssertStringEqual(t, result[0].LandSize, wanted[0].LandSize)
-		AssertStringEqual(t, result[0].MlsId, wanted[0].MlsId)
-		AssertStringEqual(t, result[0].MlsNumber, wanted[0].MlsNumber)
-		AssertStringEqual(t, result[0].MlsUrl, wanted[0].MlsUrl)
-		AssertStringEqual(t, result[0].Parking, wanted[0].Parking)
-		AssertStringEqual(t, result[0].PhotoUrl, wanted[0].PhotoUrl)
-		AssertStringEqual(t, result[0].Price, wanted[0].Price)
-		AssertStringEqual(t, result[0].PublicRemarks, wanted[0].PublicRemarks)
-		AssertStringEqual(t, result[0].Stories, wanted[0].Stories)
-		AssertStringEqual(t, result[0].PropertyType, wanted[0].PropertyType)
+		AssertStringEqual(t, result.Property[0].Address, wanted.Property[0].Address)
+		AssertStringEqual(t, result.Property[0].Bathrooms, wanted.Property[0].Bathrooms)
+		AssertStringEqual(t, result.Property[0].Bedrooms, wanted.Property[0].Bedrooms)
+		AssertStringEqual(t, result.Property[0].LandSize, wanted.Property[0].LandSize)
+		AssertStringEqual(t, result.Property[0].MlsId, wanted.Property[0].MlsId)
+		AssertStringEqual(t, result.Property[0].MlsNumber, wanted.Property[0].MlsNumber)
+		AssertStringEqual(t, result.Property[0].MlsUrl, wanted.Property[0].MlsUrl)
+		AssertArrayEqual(t, result.Property[0].Parking, wanted.Property[0].Parking)
+		AssertArrayEqual(t, result.Property[0].PhotoUrl, wanted.Property[0].PhotoUrl)
+		AssertStringEqual(t, result.Property[0].Price, wanted.Property[0].Price)
+		AssertStringEqual(t, result.Property[0].PublicRemarks, wanted.Property[0].PublicRemarks)
+		AssertStringEqual(t, result.Property[0].Stories, wanted.Property[0].Stories)
+		AssertStringEqual(t, result.Property[0].PropertyType, wanted.Property[0].PropertyType)
 	})
 
 	t.Run("can parse result when missing building type but have property type", func(t *testing.T) {
@@ -270,37 +274,39 @@ func TestParseJsonResults(t *testing.T) {
       "GroupingLevel": "8"
     }`)
 		result, _ := ParseJsonResults(respContent)
-		wanted := []mlspb.Property{
-			{
-				Address:       "1234 street|city, province A0B1C2",
-				Bathrooms:     "1",
-				Bedrooms:      "3 + 0",
-				LandSize:      "NA",
-				MlsId:         "20552312",
-				MlsNumber:     "19016318",
-				MlsUrl:        "NA",
-				Parking:       "NA",
-				PhotoUrl:      "https://picture/listings/low/456.jpg",
-				Price:         "NA",
-				PublicRemarks: "HOUSE DESCRIPTION",
-				Stories:       "NA",
-				PropertyType:  "Single Family",
-				ListTimestamp: "123456789",
+		wanted := mlspb.Listings{
+			Property: []*mlspb.Property{
+				{
+					Address:       "1234 street|city, province A0B1C2",
+					Bathrooms:     "1",
+					Bedrooms:      "3 + 0",
+					LandSize:      "",
+					MlsId:         "20552312",
+					MlsNumber:     "19016318",
+					MlsUrl:        "/abc/20552312/house",
+					Parking:       []string{""},
+					PhotoUrl:      []string{"https://picture/listings/low/456.jpg"},
+					Price:         "",
+					PublicRemarks: "HOUSE DESCRIPTION",
+					Stories:       "",
+					PropertyType:  "Single Family",
+					ListTimestamp: "123456789",
+				},
 			},
 		}
-		AssertStringEqual(t, result[0].Address, wanted[0].Address)
-		AssertStringEqual(t, result[0].Bathrooms, wanted[0].Bathrooms)
-		AssertStringEqual(t, result[0].Bedrooms, wanted[0].Bedrooms)
-		AssertStringEqual(t, result[0].LandSize, wanted[0].LandSize)
-		AssertStringEqual(t, result[0].MlsId, wanted[0].MlsId)
-		AssertStringEqual(t, result[0].MlsNumber, wanted[0].MlsNumber)
-		AssertStringEqual(t, result[0].MlsUrl, wanted[0].MlsUrl)
-		AssertStringEqual(t, result[0].Parking, wanted[0].Parking)
-		AssertStringEqual(t, result[0].PhotoUrl, wanted[0].PhotoUrl)
-		AssertStringEqual(t, result[0].Price, wanted[0].Price)
-		AssertStringEqual(t, result[0].PublicRemarks, wanted[0].PublicRemarks)
-		AssertStringEqual(t, result[0].Stories, wanted[0].Stories)
-		AssertStringEqual(t, result[0].PropertyType, wanted[0].PropertyType)
+		AssertStringEqual(t, result.Property[0].Address, wanted.Property[0].Address)
+		AssertStringEqual(t, result.Property[0].Bathrooms, wanted.Property[0].Bathrooms)
+		AssertStringEqual(t, result.Property[0].Bedrooms, wanted.Property[0].Bedrooms)
+		AssertStringEqual(t, result.Property[0].LandSize, wanted.Property[0].LandSize)
+		AssertStringEqual(t, result.Property[0].MlsId, wanted.Property[0].MlsId)
+		AssertStringEqual(t, result.Property[0].MlsNumber, wanted.Property[0].MlsNumber)
+		AssertStringEqual(t, result.Property[0].MlsUrl, wanted.Property[0].MlsUrl)
+		AssertArrayEqual(t, result.Property[0].Parking, wanted.Property[0].Parking)
+		AssertArrayEqual(t, result.Property[0].PhotoUrl, wanted.Property[0].PhotoUrl)
+		AssertStringEqual(t, result.Property[0].Price, wanted.Property[0].Price)
+		AssertStringEqual(t, result.Property[0].PublicRemarks, wanted.Property[0].PublicRemarks)
+		AssertStringEqual(t, result.Property[0].Stories, wanted.Property[0].Stories)
+		AssertStringEqual(t, result.Property[0].PropertyType, wanted.Property[0].PropertyType)
 	})
 }
 
@@ -308,5 +314,17 @@ func AssertStringEqual(t *testing.T, got, want string) {
 	t.Helper()
 	if strings.TrimSpace(got) != strings.TrimSpace(want) {
 		t.Errorf("got string '%s', want '%s'", strings.TrimSpace(got), strings.TrimSpace(want))
+	}
+}
+
+func AssertArrayEqual(t *testing.T, got, want []string) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Errorf("got array '%v', want array '%v'", got, want)
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			t.Errorf("got array '%v', want array '%v'", got, want)
+		}
 	}
 }

@@ -10,94 +10,111 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ParseJsonResults(responseBody []byte) ([]*mlspb.Property, error) {
-	var listingResults []*mlspb.Property
+type building struct {
+	Bathrooms    string `json:"BathroomTotal"`
+	Bedrooms     string `json:"Bedrooms"`
+	Stories      string `json:"StoriesTotal"`
+	BuildingType string `json:"Type"`
+}
 
-	var resp interface{}
-	err := json.Unmarshal(responseBody, &resp)
+type address struct {
+	Address string `json:"AddressText"`
+}
+
+type photo struct {
+	SequenceId  string `json:"SequenceId"`
+	HighRes     string `json:"HighResPath"`
+	MedRes      string `json:"MedResPath"`
+	LowRes      string `json:"LowResPath"`
+	LastUpdated string `json:"LastUpdated"`
+}
+
+type parking struct {
+	Name string `json:"Name"`
+}
+
+type property struct {
+	Price        string    `json:"Price"`
+	PropertyType string    `json:"Type"`
+	Address      address   `json:"Address"`
+	Photos       []photo   `json:"Photo"`
+	Parkings     []parking `json:"Parking"`
+}
+
+type land struct {
+	Size string `json:"SizeTotal"`
+}
+
+type listing struct {
+	ID            string   `json:"Id"`
+	MlsNumber     string   `json:"MlsNumber"`
+	PublicRemarks string   `json:"PublicRemarks"`
+	Building      building `json:"Building"`
+	Property      property `json:"Property"`
+	Land          land     `json:"Land"`
+	ZipCode       string   `json:"PostalCode"`
+	URL           string   `json:"RelativeDetailsURL"`
+	URLEn         string   `json:"RelativeURLEn"`
+}
+
+type listings struct {
+	Listing []listing `json:"Results"`
+}
+
+func ParseJsonResults(responseBody []byte) (*mlspb.Listings, error) {
+	listingResults := &mlspb.Listings{}
+
+	var listings listings
+	err := json.Unmarshal(responseBody, &listings)
 	if err != nil {
-		logrus.Fatalf("parse listingjson result err: %v", err)
+		logrus.Errorf("cannot parse the mls listing json: %v", err)
+		return listingResults, err
 	}
 
-	if listings, ok := resp.(map[string]interface{})["Results"]; ok {
-		for _, listing := range listings.([]interface{}) {
-			listingDetail := listing.(map[string]interface{})
-
-			var v interface{}
-
-			property := listingDetail["Property"].(map[string]interface{})
-			propertyAddress := (property["Address"].(map[string]interface{}))["AddressText"].(string)
-			building := listingDetail["Building"].(map[string]interface{})
-			bathroom := building["BathroomTotal"].(string)
-			bedroom := building["Bedrooms"].(string)
-			mlsId := (listingDetail["Id"]).(string)
-			mlsNum := (listingDetail["MlsNumber"]).(string)
-
-			lots := "NA"
-			if v, ok = (listingDetail["Land"].(map[string]interface{}))["SizeTotal"]; ok {
-				lots = v.(string)
-			}
-
-			url := "NA"
-			if v, ok = listingDetail["RelativeDetailsURL"]; ok {
-				url = strings.Replace(v.(string), "\\", "", -1)
-			}
-
-			parkingAvailable := "NA"
-			if v, ok = ((property["Parking"].([]interface{}))[0].(map[string]interface{}))["Name"]; ok {
-				parkingAvailable = v.(string)
-			}
-
-			photo := "NA"
-			if v, ok = ((property["Photo"].([]interface{}))[0].(map[string]interface{}))["HighResPath"]; ok {
-				photo = strings.Replace(v.(string), "\\", "", -1)
-			} else if v, ok = ((property["Photo"].([]interface{}))[0].(map[string]interface{}))["MedResPath"]; ok {
-				photo = strings.Replace(v.(string), "\\", "", -1)
-			} else if v, ok = ((property["Photo"].([]interface{}))[0].(map[string]interface{}))["LowResPath"]; ok {
-				photo = strings.Replace(v.(string), "\\", "", -1)
-			}
-
-			propertyPrice := "NA"
-			if v, ok = property["Price"]; ok {
-				propertyPrice = v.(string)
-			}
-
-			remarks := "NA"
-			if v, ok = listingDetail["PublicRemarks"]; ok {
-				remarks = v.(string)
-			}
-
-			numOfStories := "NA"
-			if v, ok = building["StoriesTotal"]; ok {
-				numOfStories = v.(string)
-			}
-
-			houseType := "NA"
-			if v, ok = building["Type"]; ok {
-				houseType = v.(string)
-			} else if v, ok = property["Type"]; ok {
-				houseType = v.(string)
-			}
-
-			house := &mlspb.Property{
-				Address:       propertyAddress,
-				Bathrooms:     bathroom,
-				Bedrooms:      bedroom,
-				LandSize:      lots,
-				MlsId:         mlsId,
-				MlsNumber:     mlsNum,
-				MlsUrl:        url,
-				Parking:       parkingAvailable,
-				PhotoUrl:      photo,
-				Price:         propertyPrice,
-				PublicRemarks: remarks,
-				Stories:       numOfStories,
-				PropertyType:  houseType,
-				ListTimestamp: "123456789",
-			}
-			listingResults = append(listingResults, house)
+	for _, l := range listings.Listing {
+		parkings := []string{}
+		photos := []string{}
+		for _, p := range l.Property.Parkings {
+			parkings = append(parkings, strings.TrimSpace(p.Name))
 		}
+		for _, photo := range l.Property.Photos {
+			if photo.HighRes != "" {
+				photos = append(photos, strings.TrimSpace(photo.HighRes))
+			} else if photo.MedRes != "" {
+				photos = append(photos, strings.TrimSpace(photo.MedRes))
+			} else if photo.LowRes != "" {
+				photos = append(photos, strings.TrimSpace(photo.LowRes))
+			}
+		}
+
+		mlsURL := strings.TrimSpace(l.URL)
+		if mlsURL == "" {
+			mlsURL = strings.TrimSpace(l.URLEn)
+		}
+
+		houseType := strings.TrimSpace(l.Building.BuildingType)
+		if houseType == "" {
+			houseType = strings.TrimSpace(l.Property.PropertyType)
+		}
+		house := &mlspb.Property{
+			Address:       strings.TrimSpace(l.Property.Address.Address),
+			Bathrooms:     strings.TrimSpace(l.Building.Bathrooms),
+			Bedrooms:      strings.TrimSpace(l.Building.Bedrooms),
+			LandSize:      strings.TrimSpace(l.Land.Size),
+			MlsId:         strings.TrimSpace(l.ID),
+			MlsNumber:     strings.TrimSpace(l.MlsNumber),
+			MlsUrl:        mlsURL,
+			Parking:       parkings,
+			PhotoUrl:      photos,
+			Price:         strings.TrimSpace(l.Property.Price),
+			PublicRemarks: strings.TrimSpace(l.PublicRemarks),
+			Stories:       strings.TrimSpace(l.Building.Stories),
+			PropertyType:  houseType,
+			ListTimestamp: "123456789",
+		}
+		listingResults.Property = append(listingResults.Property, house)
 	}
+
 	return listingResults, nil
 }
 
