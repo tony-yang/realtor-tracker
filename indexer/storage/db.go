@@ -145,6 +145,6 @@ func (d *DB) ReadListing(id string) (string, error) {
 	return "", nil
 }
 
-func (d *DB) ReadListings() (string, error) {
-	return "", nil
+func (d *DB) ReadListings() (*mlspb.Listings, error) {
+	return nil, nil
 }

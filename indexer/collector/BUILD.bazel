@@ -3,16 +3,25 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "db.go",
         "interface.go",
-        "memory.go",
+        "mls.go",
     ],
-    importpath = "github.com/tony-yang/realtor-tracker/indexer/storage",
+    importpath = "github.com/tony-yang/realtor-tracker/indexer/collector",
     visibility = ["//visibility:public"],
     deps = [
         "//indexer/mls:go_default_library",
-        "//vendor/github.com/mattn/go-sqlite3:go_default_library",
+        "//indexer/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["mls_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//indexer/mls:go_default_library",
+        "//indexer/storage:go_default_library",
     ],
 )
 
@@ -28,11 +37,4 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["memory_test.go"],
-    embed = [":go_default_library"],
-    deps = ["//indexer/mls:go_default_library"],
 )

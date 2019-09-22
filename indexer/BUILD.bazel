@@ -1,21 +1,10 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["mls.go"],
+    srcs = ["main.go"],
     importpath = "github.com/tony-yang/realtor-tracker/indexer",
     visibility = ["//visibility:public"],
-    deps = [
-        "//indexer/mls:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["mls_test.go"],
-    embed = [":go_default_library"],
-    deps = ["//indexer/mls:go_default_library"],
 )
 
 filegroup(
@@ -37,11 +26,17 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//indexer/client:all-srcs",
-        "//indexer/main:all-srcs",
+        "//indexer/collector:all-srcs",
         "//indexer/mls:all-srcs",
         "//indexer/server:all-srcs",
         "//indexer/storage:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "indexer",
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

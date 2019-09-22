@@ -1,10 +1,18 @@
 syntax = "proto3";
 package mls;
 
+/* MlsService defines the gRPC service to get listings from the collected data. */
 service MlsService {
   rpc GetListing(Request) returns (Listings) {}
 }
 
+/* PriceHistory collects the price change over time of a listing. */
+message PriceHistory {
+  int32 price = 1;
+  int64 timestamp = 2;
+}
+
+/* Property contains the detail information of a MLS listing. */
 message Property {
 	string address = 1;
 	string bathrooms = 2;
@@ -15,17 +23,20 @@ message Property {
 	string mls_url = 7;
 	repeated string parking = 8;
 	repeated string photo_url = 9;
-	string price = 10;
+	repeated PriceHistory price = 10;
 	string public_remarks = 11;
 	string stories = 12;
 	string property_type = 13;
-	string list_timestamp = 14;
+	int64 list_timestamp = 14;
+  string source = 15;
 }
 
+/* Listings holds all the properties collected from the MLS collectors. */
 message Listings {
   repeated Property property = 1;
 }
 
+/* Request defines the parameter for the gRPC service GetListing. */
 message Request {
   string property_id = 1;
 }
