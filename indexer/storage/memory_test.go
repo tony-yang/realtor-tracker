@@ -9,7 +9,14 @@ import (
 
 func TestSaveNewListing(t *testing.T) {
 	t.Run("save a new listing", func(t *testing.T) {
-		mDB := NewMemoryDB()
+		cityIndex := map[string]*City{
+			"city,province": {
+				Name:      "City",
+				State:     "Province",
+				MlsNumber: make(map[string]bool),
+			},
+		}
+		mDB := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016318"
 		price := []*mlspb.PriceHistory{
@@ -34,6 +41,11 @@ func TestSaveNewListing(t *testing.T) {
 				Stories:       "1.5",
 				PropertyType:  "House",
 				ListTimestamp: 123456789,
+				Latitude:      10.1234,
+				Longitude:     20.9876,
+				City:          "city",
+				State:         "province",
+				Zipcode:       "A0B1C2",
 			},
 		}
 		if err := mDB.SaveNewListing(listings); err != nil {
@@ -55,12 +67,31 @@ func TestSaveNewListing(t *testing.T) {
 		if mDB.PriceHistory[mlsNumber][0].price != price[0].Price {
 			t.Errorf("price incorrectly saved, expected %d, got %d", price[0].Price, mDB.PriceHistory[mlsNumber][0].price)
 		}
+
+		if mDB.Property[mlsNumber].longitude != listings[mlsNumber].Longitude {
+			t.Errorf("longitude incorrectly saved, expected %f, got %f", listings[mlsNumber].Longitude, mDB.Property[mlsNumber].longitude)
+		}
+
+		if mDB.Property[mlsNumber].city != listings[mlsNumber].City {
+			t.Errorf("city incorrectly saved, expected %s, got %s", listings[mlsNumber].City, mDB.Property[mlsNumber].city)
+		}
+
+		if _, ok := mDB.CityIndex["city,province"].MlsNumber[mlsNumber]; !ok {
+			t.Errorf("city index incorrectly saved, expected mlsNumber to exist under city,province, but got %t", ok)
+		}
 	})
 
 	t.Run("save same listing should reject", func(t *testing.T) {
-		mDB := NewMemoryDB()
+		cityIndex := map[string]*City{
+			"city,province": {
+				Name:      "City",
+				State:     "Province",
+				MlsNumber: make(map[string]bool),
+			},
+		}
+		mDB := NewMemoryDB(cityIndex)
 
-		mlsNumber := "19016318"
+		mlsNumber := "19016319"
 		price := []*mlspb.PriceHistory{
 			{
 				Price:     10000,
@@ -83,6 +114,11 @@ func TestSaveNewListing(t *testing.T) {
 				Stories:       "1.5",
 				PropertyType:  "House",
 				ListTimestamp: 123456789,
+				Latitude:      10.1234,
+				Longitude:     20.9876,
+				City:          "city",
+				State:         "province",
+				Zipcode:       "A0B1C2",
 			},
 		}
 		if err := mDB.SaveNewListing(listings); err != nil {
@@ -97,9 +133,16 @@ func TestSaveNewListing(t *testing.T) {
 
 func TestReadListings(t *testing.T) {
 	t.Run("read a saved listing", func(t *testing.T) {
-		mDB := NewMemoryDB()
+		cityIndex := map[string]*City{
+			"city,province": {
+				Name:      "City",
+				State:     "Province",
+				MlsNumber: make(map[string]bool),
+			},
+		}
+		mDB := NewMemoryDB(cityIndex)
 
-		mlsNumber := "19016318"
+		mlsNumber := "19016320"
 		price := []*mlspb.PriceHistory{
 			{
 				Price:     10000,
@@ -122,6 +165,11 @@ func TestReadListings(t *testing.T) {
 				Stories:       "1.5",
 				PropertyType:  "House",
 				ListTimestamp: 123456789,
+				Latitude:      10.1234,
+				Longitude:     20.9876,
+				City:          "city",
+				State:         "province",
+				Zipcode:       "A0B1C2",
 			},
 		}
 		if err := mDB.SaveNewListing(listings); err != nil {
@@ -146,6 +194,10 @@ func TestReadListings(t *testing.T) {
 
 		if results.Property[0].Price[0].Price != price[0].Price {
 			t.Errorf("price incorrectly saved, expected %d, got %d", price[0].Price, results.Property[0].Price[0].Price)
+		}
+
+		if results.Property[0].Longitude != listings[mlsNumber].Longitude {
+			t.Errorf("longitude incorrectly saved, expected %f, got %f", listings[mlsNumber].Longitude, results.Property[0].Longitude)
 		}
 	})
 }

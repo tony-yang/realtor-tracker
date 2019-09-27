@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -16,6 +17,12 @@ const (
 	Sold
 	Closed
 )
+
+type City struct {
+	Name      string
+	State     string
+	MlsNumber map[string]bool
+}
 
 type mls struct {
 	mlsID              string
@@ -33,7 +40,12 @@ type mls struct {
 }
 
 type property struct {
-	address string
+	address   string
+	zipcode   string
+	latitude  float64
+	longitude float64
+	city      string
+	state     string
 }
 
 type photo struct {
@@ -52,16 +64,26 @@ type MemoryDB struct {
 	Property     map[string]*property
 	Photo        map[string]*photo
 	PriceHistory map[string][]*priceHistory
+	CityIndex    map[string]*City
 }
 
 // NewMemoryDB creates a instance of all the in-memory data structure used to
 // hold the collected data.
-func NewMemoryDB() *MemoryDB {
+// cityIndex is in the format of map[string]*City
+// ie. map[string]*City{
+// 	 "windsor,ontario": &City{
+// 		 Name: "Windsor",
+// 		 State: "Ontario",
+// 		 MlsNumber: make(map[string]bool)
+// 	 }
+// }
+func NewMemoryDB(cityIndex map[string]*City) *MemoryDB {
 	return &MemoryDB{
 		Mls:          make(map[string]*mls),
 		Property:     make(map[string]*property),
 		Photo:        make(map[string]*photo),
 		PriceHistory: make(map[string][]*priceHistory),
+		CityIndex:    cityIndex,
 	}
 }
 
@@ -76,7 +98,7 @@ func (m *MemoryDB) SaveNewListing(listings map[string]*mlspb.Property) error {
 	defer m.Lock.Unlock()
 
 	for mlsNumber, p := range listings {
-		logrus.Info("######### mlsNumber =", mlsNumber, "listing", p)
+		logrus.Debugf("Save Listing: mlsNumber = %s listing %v\n", mlsNumber, p)
 		if _, ok := m.Mls[mlsNumber]; ok {
 			return fmt.Errorf("Listing %s exists", mlsNumber)
 		}
@@ -94,7 +116,14 @@ func (m *MemoryDB) SaveNewListing(listings map[string]*mlspb.Property) error {
 			status:             Open,
 			source:             p.Source,
 		}
-		m.Property[mlsNumber] = &property{address: p.Address}
+		m.Property[mlsNumber] = &property{
+			address:   p.Address,
+			zipcode:   p.Zipcode,
+			latitude:  p.Latitude,
+			longitude: p.Longitude,
+			city:      p.City,
+			state:     p.State,
+		}
 		m.Photo[mlsNumber] = &photo{photoURL: p.PhotoUrl}
 		m.PriceHistory[mlsNumber] = []*priceHistory{}
 		for _, p := range p.Price {
@@ -104,6 +133,8 @@ func (m *MemoryDB) SaveNewListing(listings map[string]*mlspb.Property) error {
 			}
 			m.PriceHistory[mlsNumber] = append(m.PriceHistory[mlsNumber], price)
 		}
+		cityKey := fmt.Sprintf("%s,%s", strings.ToLower(p.City), strings.ToLower(p.State))
+		m.CityIndex[cityKey].MlsNumber[mlsNumber] = true
 	}
 	return nil
 }
@@ -143,6 +174,11 @@ func (m *MemoryDB) ReadListings() (*mlspb.Listings, error) {
 			PropertyType:  mls.propertyType,
 			ListTimestamp: mls.availableTimestamp,
 			Source:        mls.source,
+			Latitude:      m.Property[mlsNumber].latitude,
+			Longitude:     m.Property[mlsNumber].longitude,
+			City:          m.Property[mlsNumber].city,
+			State:         m.Property[mlsNumber].state,
+			Zipcode:       m.Property[mlsNumber].zipcode,
 		}
 		listings.Property = append(listings.Property, p)
 	}

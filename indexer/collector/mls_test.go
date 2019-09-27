@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"testing"
 
 	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
@@ -102,7 +101,14 @@ func TestFetchListing(t *testing.T) {
 				Header:     make(http.Header),
 			}
 		})
-		mDB := storage.NewMemoryDB()
+		cityIndex := map[string]*storage.City{
+			"city,province": {
+				Name:      "City",
+				State:     "Province",
+				MlsNumber: make(map[string]bool),
+			},
+		}
+		mDB := storage.NewMemoryDB(cityIndex)
 		m := NewMls(mDB, c)
 		m.FetchListing()
 		savedListings, _ := mDB.ReadListings()
@@ -207,6 +213,11 @@ func TestFormatListing(t *testing.T) {
 				PublicRemarks: "HOUSE DESCRIPTION",
 				Stories:       "1.5",
 				PropertyType:  "House",
+				Latitude:      98.765432,
+				Longitude:     -12.345678,
+				City:          "city",
+				State:         "province",
+				Zipcode:       "A0B1C2",
 			},
 		}
 		AssertStringEqual(t, result[mlsNumber].Address, wanted[mlsNumber].Address)
@@ -221,6 +232,11 @@ func TestFormatListing(t *testing.T) {
 		AssertStringEqual(t, result[mlsNumber].PublicRemarks, wanted[mlsNumber].PublicRemarks)
 		AssertStringEqual(t, result[mlsNumber].Stories, wanted[mlsNumber].Stories)
 		AssertStringEqual(t, result[mlsNumber].PropertyType, wanted[mlsNumber].PropertyType)
+		AssertFloat64Equal(t, result[mlsNumber].Latitude, wanted[mlsNumber].Latitude)
+		AssertFloat64Equal(t, result[mlsNumber].Longitude, wanted[mlsNumber].Longitude)
+		AssertStringEqual(t, result[mlsNumber].City, wanted[mlsNumber].City)
+		AssertStringEqual(t, result[mlsNumber].State, wanted[mlsNumber].State)
+		AssertStringEqual(t, result[mlsNumber].Zipcode, wanted[mlsNumber].Zipcode)
 	})
 
 	t.Run("can parse result when optional properties not available", func(t *testing.T) {
@@ -313,6 +329,9 @@ func TestFormatListing(t *testing.T) {
 				PublicRemarks: "HOUSE DESCRIPTION",
 				Stories:       "1.5",
 				PropertyType:  "Single Family",
+				City:          "city",
+				State:         "province",
+				Zipcode:       "A0B1C2",
 			},
 		}
 		AssertStringEqual(t, result[mlsNumber].Address, wanted[mlsNumber].Address)
@@ -327,6 +346,11 @@ func TestFormatListing(t *testing.T) {
 		AssertStringEqual(t, result[mlsNumber].PublicRemarks, wanted[mlsNumber].PublicRemarks)
 		AssertStringEqual(t, result[mlsNumber].Stories, wanted[mlsNumber].Stories)
 		AssertStringEqual(t, result[mlsNumber].PropertyType, wanted[mlsNumber].PropertyType)
+		AssertFloat64Equal(t, result[mlsNumber].Latitude, wanted[mlsNumber].Latitude)
+		AssertFloat64Equal(t, result[mlsNumber].Longitude, wanted[mlsNumber].Longitude)
+		AssertStringEqual(t, result[mlsNumber].City, wanted[mlsNumber].City)
+		AssertStringEqual(t, result[mlsNumber].State, wanted[mlsNumber].State)
+		AssertStringEqual(t, result[mlsNumber].Zipcode, wanted[mlsNumber].Zipcode)
 	})
 
 	t.Run("can parse result when missing building type but have property type", func(t *testing.T) {
@@ -411,6 +435,9 @@ func TestFormatListing(t *testing.T) {
 				Stories:       "",
 				PropertyType:  "Single Family",
 				ListTimestamp: 123456789,
+				City:          "city",
+				State:         "province",
+				Zipcode:       "A0B1C2",
 			},
 		}
 		AssertStringEqual(t, result[mlsNumber].Address, wanted[mlsNumber].Address)
@@ -425,13 +452,23 @@ func TestFormatListing(t *testing.T) {
 		AssertStringEqual(t, result[mlsNumber].PublicRemarks, wanted[mlsNumber].PublicRemarks)
 		AssertStringEqual(t, result[mlsNumber].Stories, wanted[mlsNumber].Stories)
 		AssertStringEqual(t, result[mlsNumber].PropertyType, wanted[mlsNumber].PropertyType)
+		AssertStringEqual(t, result[mlsNumber].City, wanted[mlsNumber].City)
+		AssertStringEqual(t, result[mlsNumber].State, wanted[mlsNumber].State)
+		AssertStringEqual(t, result[mlsNumber].Zipcode, wanted[mlsNumber].Zipcode)
 	})
 }
 
 func AssertStringEqual(t *testing.T, got, want string) {
 	t.Helper()
-	if strings.TrimSpace(got) != strings.TrimSpace(want) {
-		t.Errorf("got string '%s', want '%s'", strings.TrimSpace(got), strings.TrimSpace(want))
+	if got != want {
+		t.Errorf("got string '%s', want '%s'", got, want)
+	}
+}
+
+func AssertFloat64Equal(t *testing.T, got, want float64) {
+	t.Helper()
+	if got != want {
+		t.Errorf("got string '%f', want '%f'", got, want)
 	}
 }
 

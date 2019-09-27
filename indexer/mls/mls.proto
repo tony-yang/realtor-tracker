@@ -29,6 +29,11 @@ message Property {
 	string property_type = 13;
 	int64 list_timestamp = 14;
   string source = 15;
+  double latitude = 16;
+  double longitude = 17;
+  string city = 18;
+  string state = 19;
+  string zipcode = 20;
 }
 
 /* Listings holds all the properties collected from the MLS collectors. */

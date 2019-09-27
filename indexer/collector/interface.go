@@ -27,7 +27,9 @@ type building struct {
 }
 
 type address struct {
-	Address string `json:"AddressText"`
+	Address   string `json:"AddressText"`
+	Latitude  string `json:"Latitude"`
+	Longitude string `json:"Longitude"`
 }
 
 type photo struct {

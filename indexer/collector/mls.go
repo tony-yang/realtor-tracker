@@ -9,18 +9,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 	"github.com/tony-yang/realtor-tracker/indexer/storage"
-
-	"github.com/sirupsen/logrus"
 )
 
 const (
 	source = "mls-canada"
 )
 
+var (
+	cityIndex = map[string]*storage.City{
+		"windsor,ontario": {
+			Name:      "Windsor",
+			State:     "Ontario",
+			MlsNumber: make(map[string]bool),
+		},
+	}
+)
+
 func init() {
-	RegisterCollector(source, NewMls(storage.NewMemoryDB(), &http.Client{}))
+	RegisterCollector(source, NewMls(storage.NewMemoryDB(cityIndex), &http.Client{}))
 }
 
 type mls struct {
@@ -31,7 +40,7 @@ type mls struct {
 // NewMls create a new client for the MLS Canada collector.
 func NewMls(s storage.DBInterface, c *http.Client) *mls {
 	if s == nil {
-		s = storage.NewMemoryDB()
+		s = storage.NewMemoryDB(cityIndex)
 	}
 
 	if c == nil {
@@ -48,10 +57,11 @@ func formatListing(listings *listings) map[string]*mlspb.Property {
 	properties := make(map[string]*mlspb.Property)
 	for _, l := range listings.Listing {
 		parkings := []string{}
-		photos := []string{}
 		for _, p := range l.Property.Parkings {
 			parkings = append(parkings, strings.TrimSpace(p.Name))
 		}
+
+		photos := []string{}
 		for _, photo := range l.Property.Photos {
 			if photo.HighRes != "" {
 				photos = append(photos, strings.TrimSpace(photo.HighRes))
@@ -71,6 +81,7 @@ func formatListing(listings *listings) map[string]*mlspb.Property {
 		if houseType == "" {
 			houseType = strings.TrimSpace(l.Property.PropertyType)
 		}
+
 		p, err := strconv.Atoi(strings.ReplaceAll(strings.TrimLeft(l.Property.Price, "$"), ",", ""))
 		if err != nil {
 			p = -1
@@ -80,6 +91,27 @@ func formatListing(listings *listings) map[string]*mlspb.Property {
 				Price:     int32(p),
 				Timestamp: time.Now().Unix(),
 			},
+		}
+
+		latitude, err := strconv.ParseFloat(l.Property.Address.Latitude, 64)
+		if err != nil {
+			latitude = 0.0
+		}
+
+		longitude, err := strconv.ParseFloat(l.Property.Address.Longitude, 64)
+		if err != nil {
+			longitude = 0.0
+		}
+
+		cityInfo := strings.Split(l.Property.Address.Address, "|")
+		city := ""
+		state := ""
+		zipcode := ""
+		if len(cityInfo) == 2 {
+			cityStateZipcode := strings.Split(cityInfo[1], " ")
+			city = strings.TrimSuffix(strings.TrimSpace(cityStateZipcode[0]), ",")
+			state = strings.TrimSpace(cityStateZipcode[1])
+			zipcode = strings.TrimSpace(cityStateZipcode[2])
 		}
 
 		house := &mlspb.Property{
@@ -98,6 +130,11 @@ func formatListing(listings *listings) map[string]*mlspb.Property {
 			PropertyType:  houseType,
 			ListTimestamp: 123456789,
 			Source:        source,
+			Latitude:      latitude,
+			Longitude:     longitude,
+			City:          city,
+			State:         state,
+			Zipcode:       zipcode,
 		}
 		properties[house.MlsNumber] = house
 	}
@@ -114,8 +151,8 @@ func (m *mls) FetchListing() {
 		"LatitudeMin":          {"41.9947561"},
 		"LongitudeMin":         {"-83.1245969"},
 		"CurrentPage":          {"1"},
-		"Sort":                 {"1-A"},
-		"RecordsPerPage":       {"2"},
+		"Sort":                 {"6-D"},
+		"RecordsPerPage":       {"20"},
 		"PropertyTypeGroupID":  {"1"},
 		"PropertySearchTypeId": {"1"},
 		"TransactionTypeId":    {"2"},
