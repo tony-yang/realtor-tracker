@@ -5,6 +5,11 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/tony-yang/realtor-tracker/indexer",
     visibility = ["//visibility:public"],
+    deps = [
+        "//indexer/collector:go_default_library",
+        "//indexer/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 filegroup(

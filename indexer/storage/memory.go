@@ -92,49 +92,78 @@ func (m *MemoryDB) CreateStorage() error {
 	return nil
 }
 
-// SaveNewListing saves the data collected into the in-memory data structure.
-func (m *MemoryDB) SaveNewListing(listings map[string]*mlspb.Property) error {
+// UpdateListing appends new pricing information for an existing listing record
+func (m *MemoryDB) UpdateListing(mlsNumber string, p *mlspb.Property) error {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
-	for mlsNumber, p := range listings {
-		logrus.Debugf("Save Listing: mlsNumber = %s listing %v\n", mlsNumber, p)
-		if _, ok := m.Mls[mlsNumber]; ok {
-			return fmt.Errorf("Listing %s exists", mlsNumber)
+	logrus.Debugf("update listing: mlsNumber = %s listing %v\n", mlsNumber, p)
+	if _, ok := m.PriceHistory[mlsNumber]; !ok {
+		return fmt.Errorf("Listing %s does not exist", mlsNumber)
+	}
+
+	for _, p := range p.Price {
+		price := &priceHistory{
+			price:     p.Price,
+			timestamp: p.Timestamp,
 		}
-		m.Mls[mlsNumber] = &mls{
-			mlsID:              p.MlsId,
-			mlsURL:             p.MlsUrl,
-			bathrooms:          p.Bathrooms,
-			bedrooms:           p.Bedrooms,
-			landSize:           p.LandSize,
-			parking:            p.Parking,
-			publicRemark:       p.PublicRemarks,
-			stories:            p.Stories,
-			propertyType:       p.PropertyType,
-			availableTimestamp: p.ListTimestamp,
-			status:             Open,
-			source:             p.Source,
+		m.PriceHistory[mlsNumber] = append(m.PriceHistory[mlsNumber], price)
+	}
+	return nil
+}
+
+// SaveNewListing saves the data collected into the in-memory data structure.
+func (m *MemoryDB) SaveNewListing(mlsNumber string, p *mlspb.Property) error {
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	logrus.Debugf("Save Listing: mlsNumber = %s listing %v\n", mlsNumber, p)
+	if _, ok := m.Mls[mlsNumber]; ok {
+		return fmt.Errorf("Listing %s exists", mlsNumber)
+	}
+	cityKey := fmt.Sprintf("%s,%s", strings.ToLower(p.City), strings.ToLower(p.State))
+	// logrus.Infof("### city key = %s", cityKey)
+	// logrus.Infof("		city index = %v", m.CityIndex[cityKey])
+	if c, ok := m.CityIndex[cityKey]; ok != true {
+		m.CityIndex[cityKey] = &City{
+			Name:      p.City,
+			State:     p.State,
+			MlsNumber: map[string]bool{mlsNumber: true},
 		}
-		m.Property[mlsNumber] = &property{
-			address:   p.Address,
-			zipcode:   p.Zipcode,
-			latitude:  p.Latitude,
-			longitude: p.Longitude,
-			city:      p.City,
-			state:     p.State,
+	} else {
+		c.MlsNumber[mlsNumber] = true
+	}
+
+	m.Mls[mlsNumber] = &mls{
+		mlsID:              p.MlsId,
+		mlsURL:             p.MlsUrl,
+		bathrooms:          p.Bathrooms,
+		bedrooms:           p.Bedrooms,
+		landSize:           p.LandSize,
+		parking:            p.Parking,
+		publicRemark:       p.PublicRemarks,
+		stories:            p.Stories,
+		propertyType:       p.PropertyType,
+		availableTimestamp: p.ListTimestamp,
+		status:             Open,
+		source:             p.Source,
+	}
+	m.Property[mlsNumber] = &property{
+		address:   p.Address,
+		zipcode:   p.Zipcode,
+		latitude:  p.Latitude,
+		longitude: p.Longitude,
+		city:      p.City,
+		state:     p.State,
+	}
+	m.Photo[mlsNumber] = &photo{photoURL: p.PhotoUrl}
+	m.PriceHistory[mlsNumber] = []*priceHistory{}
+	for _, p := range p.Price {
+		price := &priceHistory{
+			price:     p.Price,
+			timestamp: p.Timestamp,
 		}
-		m.Photo[mlsNumber] = &photo{photoURL: p.PhotoUrl}
-		m.PriceHistory[mlsNumber] = []*priceHistory{}
-		for _, p := range p.Price {
-			price := &priceHistory{
-				price:     p.Price,
-				timestamp: p.Timestamp,
-			}
-			m.PriceHistory[mlsNumber] = append(m.PriceHistory[mlsNumber], price)
-		}
-		cityKey := fmt.Sprintf("%s,%s", strings.ToLower(p.City), strings.ToLower(p.State))
-		m.CityIndex[cityKey].MlsNumber[mlsNumber] = true
+		m.PriceHistory[mlsNumber] = append(m.PriceHistory[mlsNumber], price)
 	}
 	return nil
 }

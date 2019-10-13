@@ -20,11 +20,7 @@ const (
 
 var (
 	cityIndex = map[string]*storage.City{
-		"windsor,ontario": {
-			Name:      "Windsor",
-			State:     "Ontario",
-			MlsNumber: make(map[string]bool),
-		},
+		"windsor,ontario": {Name: "Windsor", State: "Ontario", MlsNumber: make(map[string]bool)},
 	}
 )
 
@@ -32,13 +28,13 @@ func init() {
 	RegisterCollector(source, NewMls(storage.NewMemoryDB(cityIndex), &http.Client{}))
 }
 
-type mls struct {
-	db     storage.DBInterface
+type Mls struct {
+	DB     storage.DBInterface
 	client *http.Client
 }
 
 // NewMls create a new client for the MLS Canada collector.
-func NewMls(s storage.DBInterface, c *http.Client) *mls {
+func NewMls(s storage.DBInterface, c *http.Client) *Mls {
 	if s == nil {
 		s = storage.NewMemoryDB(cityIndex)
 	}
@@ -47,8 +43,8 @@ func NewMls(s storage.DBInterface, c *http.Client) *mls {
 		c = &http.Client{}
 	}
 
-	return &mls{
-		db:     s,
+	return &Mls{
+		DB:     s,
 		client: c,
 	}
 }
@@ -142,7 +138,7 @@ func formatListing(listings *listings) map[string]*mlspb.Property {
 }
 
 // FetchListing retrieves the mls listing from MLS Canada.
-func (m *mls) FetchListing() {
+func (m *Mls) FetchListing() {
 	listingUrl := "https://api2.realtor.ca/Listing.svc/PropertySearch_Post"
 	data := url.Values{
 		"ZoomLevel":            {"11"},
@@ -152,7 +148,7 @@ func (m *mls) FetchListing() {
 		"LongitudeMin":         {"-83.1245969"},
 		"CurrentPage":          {"1"},
 		"Sort":                 {"6-D"},
-		"RecordsPerPage":       {"20"},
+		"RecordsPerPage":       {"2"},
 		"PropertyTypeGroupID":  {"1"},
 		"PropertySearchTypeId": {"1"},
 		"TransactionTypeId":    {"2"},
@@ -179,5 +175,18 @@ func (m *mls) FetchListing() {
 	}
 
 	properties := formatListing(listings)
-	m.db.SaveNewListing(properties)
+	for mlsNumber, p := range properties {
+		err := m.DB.SaveNewListing(mlsNumber, p)
+		if err != nil {
+			err = m.DB.UpdateListing(mlsNumber, p)
+			if err != nil {
+				logrus.Errorf("failed to update listing: %v", err)
+			}
+		}
+	}
+}
+
+// GetDB retrieves the DB instance
+func (m *Mls) GetDB() storage.DBInterface {
+	return m.DB
 }

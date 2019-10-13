@@ -4,6 +4,8 @@ package collector
 
 import (
 	"fmt"
+
+	"github.com/tony-yang/realtor-tracker/indexer/storage"
 )
 
 var (
@@ -76,4 +78,6 @@ type listings struct {
 type Collector interface {
 	// FetchListing retrieves from source listing and saves to DB
 	FetchListing()
+	// GetDB retrieves the DB instance
+	GetDB() storage.DBInterface
 }

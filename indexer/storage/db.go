@@ -92,51 +92,53 @@ func (d *DB) CreateStorage() error {
 	return nil
 }
 
-func (d *DB) SaveNewListing(listings map[string]*mlspb.Property) error {
+func (d *DB) UpdateListing(mlsNumber string, p *mlspb.Property) error {
+	return nil
+}
+
+func (d *DB) SaveNewListing(mlsNumber string, listing *mlspb.Property) error {
 	if err := d.CreateStorage(); err != nil {
 		return fmt.Errorf("failed to create DB: %s", err)
 	}
 
-	for mlsNumber, listing := range listings {
-		fmt.Println("######### mlsNumber =", mlsNumber, "listing", listing)
-		statement, err := d.db.Prepare(`INSERT INTO mls (
-				mlsNumber, mlsId, mlsUrl, bathrooms, bedrooms, landSize, parking,
-				publicRemark, stories, propertyType, availableTimestamp, statusId)
-				VALUES(?, ?, ?, ?, ?, ?, ?,
-				?, ?, ?, ?, ?)`)
-		if err != nil {
-			return fmt.Errorf("error prepare insert statement to mls: %s", err)
-		}
-		statement.Exec(
-			listing.MlsNumber, listing.MlsId, listing.MlsUrl, listing.Bathrooms,
-			listing.Bedrooms, listing.LandSize, listing.Parking,
-			listing.PublicRemarks, listing.Stories, listing.PropertyType,
-			time.Now().Unix(), 1)
-
-		statement, err = d.db.Prepare(`INSERT INTO property (
-				address, mlsNumber)
-				VALUES(?, ?)`)
-		if err != nil {
-			return fmt.Errorf("error prepare insert statement to property: %s", err)
-		}
-		statement.Exec(listing.Address, listing.MlsNumber)
-
-		statement, err = d.db.Prepare(`INSERT INTO photo (
-				photoUrl, mlsNumber)
-				VALUES(?, ?)`)
-		if err != nil {
-			return fmt.Errorf("error prepare insert statement to photo: %s", err)
-		}
-		statement.Exec(listing.PhotoUrl, listing.MlsNumber)
-
-		statement, err = d.db.Prepare(`INSERT INTO priceHistory (
-				mlsNumber, price, priceTimestamp)
-				VALUES(?, ?, ?)`)
-		if err != nil {
-			return fmt.Errorf("error prepare insert statement to photo: %s", err)
-		}
-		statement.Exec(listing.MlsNumber, listing.Price, time.Now().Unix())
+	fmt.Println("######### mlsNumber =", mlsNumber, "listing", listing)
+	statement, err := d.db.Prepare(`INSERT INTO mls (
+			mlsNumber, mlsId, mlsUrl, bathrooms, bedrooms, landSize, parking,
+			publicRemark, stories, propertyType, availableTimestamp, statusId)
+			VALUES(?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?)`)
+	if err != nil {
+		return fmt.Errorf("error prepare insert statement to mls: %s", err)
 	}
+	statement.Exec(
+		listing.MlsNumber, listing.MlsId, listing.MlsUrl, listing.Bathrooms,
+		listing.Bedrooms, listing.LandSize, listing.Parking,
+		listing.PublicRemarks, listing.Stories, listing.PropertyType,
+		time.Now().Unix(), 1)
+
+	statement, err = d.db.Prepare(`INSERT INTO property (
+			address, mlsNumber)
+			VALUES(?, ?)`)
+	if err != nil {
+		return fmt.Errorf("error prepare insert statement to property: %s", err)
+	}
+	statement.Exec(listing.Address, listing.MlsNumber)
+
+	statement, err = d.db.Prepare(`INSERT INTO photo (
+			photoUrl, mlsNumber)
+			VALUES(?, ?)`)
+	if err != nil {
+		return fmt.Errorf("error prepare insert statement to photo: %s", err)
+	}
+	statement.Exec(listing.PhotoUrl, listing.MlsNumber)
+
+	statement, err = d.db.Prepare(`INSERT INTO priceHistory (
+			mlsNumber, price, priceTimestamp)
+			VALUES(?, ?, ?)`)
+	if err != nil {
+		return fmt.Errorf("error prepare insert statement to photo: %s", err)
+	}
+	statement.Exec(listing.MlsNumber, listing.Price, time.Now().Unix())
 
 	return nil
 }
