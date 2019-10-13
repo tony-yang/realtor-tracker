@@ -23,18 +23,16 @@ var (
 )
 
 func getListing(c mlspb.MlsServiceClient) {
-	logrus.Println("Get the mls property")
+	logrus.Info("Get the mls property")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	request := &mlspb.Request{
-		PropertyId: "19016318",
-	}
+	request := &mlspb.Request{}
 	property, err := c.GetListing(ctx, request)
 	if err != nil {
 		logrus.Fatalf("%v.GetListing() failed, %v", c, err)
 	}
-	logrus.Println(property)
+	logrus.Info(property)
 }
 
 func main() {

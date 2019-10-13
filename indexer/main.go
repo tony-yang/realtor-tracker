@@ -3,29 +3,27 @@
 package main
 
 import (
+	"time"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tony-yang/realtor-tracker/indexer/collector"
+	"github.com/tony-yang/realtor-tracker/indexer/server"
 )
 
 func runCollectors() {
 	// each collector will run daily
-	for name, c := range collector.Collectors {
-		logrus.Infof("Running the '%s' collector...", name)
-		c.FetchListing()
-
-		result, err := c.GetDB().ReadListings()
-		if err != nil {
-			logrus.Errorf("reading property listing failed: %v", err)
+	for i := 0; i < 3; i++ {
+		for name, c := range collector.Collectors {
+			logrus.Infof("Running the '%s' collector...", name)
+			c.FetchListing()
+			time.Sleep(5 * time.Second)
 		}
-		logrus.Println(result.String())
 	}
 }
 
 func main() {
 	logrus.Info("Indexer Main")
+	go runCollectors()
 
-	for i := 0; i < 3; i++ {
-		runCollectors()
-	}
-
+	server.StartServer()
 }

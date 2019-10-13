@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//indexer/collector:go_default_library",
-        "//indexer/storage:go_default_library",
+        "//indexer/server:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

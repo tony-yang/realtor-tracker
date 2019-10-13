@@ -42,6 +42,4 @@ message Listings {
 }
 
 /* Request defines the parameter for the gRPC service GetListing. */
-message Request {
-  string property_id = 1;
-}
+message Request {}
