@@ -8,8 +8,8 @@ import (
 // DBInterface defines the common interface for all types of storage implemented.
 type DBInterface interface {
 	CreateStorage() error
-	SaveNewListing(mlsNumber string, p *mlspb.Property) error
-	UpdateListing(mlsNumber string, p *mlspb.Property) error
+	SaveNewListing(p *mlspb.Property) error
+	UpdateListing(p *mlspb.Property) error
 	ReadListing(id string) (string, error)
 	ReadListings() (*mlspb.Listings, error)
 }

@@ -6,6 +6,7 @@ go_library(
         "db.go",
         "interface.go",
         "memory.go",
+        "sqlite.go",
     ],
     importpath = "github.com/tony-yang/realtor-tracker/indexer/storage",
     visibility = ["//visibility:public"],
@@ -32,7 +33,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["memory_test.go"],
+    srcs = [
+        "memory_test.go",
+        "sqlite_test.go",
+    ],
     embed = [":go_default_library"],
     deps = ["//indexer/mls:go_default_library"],
 )

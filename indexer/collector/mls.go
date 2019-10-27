@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	RegisterCollector(source, NewMls(storage.NewMemoryDB(cityIndex), &http.Client{}))
+	RegisterCollector(source, NewMls(storage.NewSqliteDB("/tmp/realtor_prod.db"), &http.Client{}))
 }
 
 type Mls struct {
@@ -175,10 +175,10 @@ func (m *Mls) FetchListing() {
 	}
 
 	properties := formatListing(listings)
-	for mlsNumber, p := range properties {
-		err := m.DB.SaveNewListing(mlsNumber, p)
+	for _, p := range properties {
+		err := m.DB.SaveNewListing(p)
 		if err != nil {
-			err = m.DB.UpdateListing(mlsNumber, p)
+			err = m.DB.UpdateListing(p)
 			if err != nil {
 				logrus.Errorf("failed to update listing: %v", err)
 			}

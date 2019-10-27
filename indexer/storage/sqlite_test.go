@@ -1,22 +1,24 @@
 package storage
 
 import (
+	"os"
 	"testing"
 	"time"
 
 	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 )
 
-func TestSaveNewListing(t *testing.T) {
+func cleanSqliteDB(dbPath string) error {
+	return os.Remove(dbPath)
+}
+
+func TestSqliteSaveNewListing(t *testing.T) {
 	t.Run("save a new listing", func(t *testing.T) {
-		cityIndex := map[string]*City{
-			"city,province": {
-				Name:      "City",
-				State:     "Province",
-				MlsNumber: make(map[string]bool),
-			},
+		var dbPath = "/tmp/realtor.db"
+		db, err := NewSqliteDB(dbPath)
+		if err != nil {
+			t.Error(err)
 		}
-		mDB := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016318"
 		price := []*mlspb.PriceHistory{
@@ -48,48 +50,21 @@ func TestSaveNewListing(t *testing.T) {
 				Zipcode:       "A0B1C2",
 			},
 		}
-		if err := mDB.SaveNewListing(listings[mlsNumber]); err != nil {
+		if err := db.SaveNewListing(listings[mlsNumber]); err != nil {
 			t.Errorf("Failed to save the new listing: %v", err)
 		}
 
-		if mDB.Mls[mlsNumber].mlsID != listings[mlsNumber].MlsId {
-			t.Errorf("mlsID incorrectly saved, expected %d, got %s", listings[mlsNumber].MlsId, mDB.Mls[mlsNumber].mlsID)
-		}
-
-		if mDB.Mls[mlsNumber].mlsURL != listings[mlsNumber].MlsUrl {
-			t.Errorf("mlsURL incorrectly saved, expected %s, got %s", listings[mlsNumber].MlsUrl, mDB.Mls[mlsNumber].mlsURL)
-		}
-
-		if mDB.Property[mlsNumber].address != listings[mlsNumber].Address {
-			t.Errorf("property address incorrectly saved, expected %s, got %s", listings[mlsNumber].Address, mDB.Property[mlsNumber].address)
-		}
-
-		if mDB.PriceHistory[mlsNumber][0].price != price[0].Price {
-			t.Errorf("price incorrectly saved, expected %d, got %d", price[0].Price, mDB.PriceHistory[mlsNumber][0].price)
-		}
-
-		if mDB.Property[mlsNumber].longitude != listings[mlsNumber].Longitude {
-			t.Errorf("longitude incorrectly saved, expected %f, got %f", listings[mlsNumber].Longitude, mDB.Property[mlsNumber].longitude)
-		}
-
-		if mDB.Property[mlsNumber].city != listings[mlsNumber].City {
-			t.Errorf("city incorrectly saved, expected %s, got %s", listings[mlsNumber].City, mDB.Property[mlsNumber].city)
-		}
-
-		if _, ok := mDB.CityIndex["city,province"].MlsNumber[mlsNumber]; !ok {
-			t.Errorf("city index incorrectly saved, expected mlsNumber to exist under city,province, but got %t", ok)
+		if err := cleanSqliteDB(dbPath); err != nil {
+			t.Errorf("Failed to cleanup the test sqlite db: %v", err)
 		}
 	})
 
 	t.Run("save same listing should reject", func(t *testing.T) {
-		cityIndex := map[string]*City{
-			"city,province": {
-				Name:      "City",
-				State:     "Province",
-				MlsNumber: make(map[string]bool),
-			},
+		var dbPath = "/tmp/realtor2.db"
+		db, err := NewSqliteDB(dbPath)
+		if err != nil {
+			t.Error(err)
 		}
-		mDB := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016319"
 		price := []*mlspb.PriceHistory{
@@ -121,26 +96,26 @@ func TestSaveNewListing(t *testing.T) {
 				Zipcode:       "A0B1C2",
 			},
 		}
-		if err := mDB.SaveNewListing(listings[mlsNumber]); err != nil {
+		if err := db.SaveNewListing(listings[mlsNumber]); err != nil {
 			t.Errorf("Failed to save the new listing: %v", err)
 		}
 
-		if err := mDB.SaveNewListing(listings[mlsNumber]); err == nil {
+		if err := db.SaveNewListing(listings[mlsNumber]); err == nil {
 			t.Errorf("Save the same listing should fail: %v", err)
+		}
+		if err := cleanSqliteDB(dbPath); err != nil {
+			t.Errorf("Failed to cleanup the test sqlite db: %v", err)
 		}
 	})
 }
 
-func TestReadListings(t *testing.T) {
+func TestSqliteReadListings(t *testing.T) {
 	t.Run("read a saved listing", func(t *testing.T) {
-		cityIndex := map[string]*City{
-			"city,province": {
-				Name:      "City",
-				State:     "Province",
-				MlsNumber: make(map[string]bool),
-			},
+		var dbPath = "/tmp/realtor3.db"
+		db, err := NewSqliteDB(dbPath)
+		if err != nil {
+			t.Error(err)
 		}
-		mDB := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016320"
 		price := []*mlspb.PriceHistory{
@@ -172,10 +147,10 @@ func TestReadListings(t *testing.T) {
 				Zipcode:       "A0B1C2",
 			},
 		}
-		if err := mDB.SaveNewListing(listings[mlsNumber]); err != nil {
+		if err := db.SaveNewListing(listings[mlsNumber]); err != nil {
 			t.Errorf("Failed to save the new listing: %v", err)
 		}
-		results, err := mDB.ReadListings()
+		results, err := db.ReadListings()
 		if err != nil {
 			t.Errorf("Failed to read the saved listing: %v", err)
 		}
@@ -198,6 +173,10 @@ func TestReadListings(t *testing.T) {
 
 		if results.Property[0].Longitude != listings[mlsNumber].Longitude {
 			t.Errorf("longitude incorrectly saved, expected %f, got %f", listings[mlsNumber].Longitude, results.Property[0].Longitude)
+		}
+
+		if err := cleanSqliteDB(dbPath); err != nil {
+			t.Errorf("Failed to cleanup the test sqlite db: %v", err)
 		}
 	})
 }

@@ -34,6 +34,7 @@ message Property {
   string city = 18;
   string state = 19;
   string zipcode = 20;
+  string status = 21;
 }
 
 /* Listings holds all the properties collected from the MLS collectors. */
