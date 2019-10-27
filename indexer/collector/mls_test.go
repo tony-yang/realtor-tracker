@@ -108,7 +108,7 @@ func TestFetchListing(t *testing.T) {
 				MlsNumber: make(map[string]bool),
 			},
 		}
-		mDB := storage.NewMemoryDB(cityIndex)
+		mDB, _ := storage.NewMemoryDB(cityIndex)
 		m := NewMls(mDB, c)
 		m.FetchListing()
 		savedListings, _ := mDB.ReadListings()

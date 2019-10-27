@@ -16,7 +16,7 @@ func TestSaveNewListing(t *testing.T) {
 				MlsNumber: make(map[string]bool),
 			},
 		}
-		mDB := NewMemoryDB(cityIndex)
+		mDB, _ := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016318"
 		price := []*mlspb.PriceHistory{
@@ -89,7 +89,7 @@ func TestSaveNewListing(t *testing.T) {
 				MlsNumber: make(map[string]bool),
 			},
 		}
-		mDB := NewMemoryDB(cityIndex)
+		mDB, _ := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016319"
 		price := []*mlspb.PriceHistory{
@@ -140,7 +140,7 @@ func TestReadListings(t *testing.T) {
 				MlsNumber: make(map[string]bool),
 			},
 		}
-		mDB := NewMemoryDB(cityIndex)
+		mDB, _ := NewMemoryDB(cityIndex)
 
 		mlsNumber := "19016320"
 		price := []*mlspb.PriceHistory{

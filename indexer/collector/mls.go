@@ -25,7 +25,11 @@ var (
 )
 
 func init() {
-	RegisterCollector(source, NewMls(storage.NewSqliteDB("/tmp/realtor_prod.db"), &http.Client{}))
+	db, err := storage.NewSqliteDB("/tmp/realtor_prod.db")
+	if err != nil {
+		logrus.Fatalf("Failed to initialize %q: %v", source, err)
+	}
+	RegisterCollector(source, NewMls(db, &http.Client{}))
 }
 
 type Mls struct {
@@ -36,7 +40,7 @@ type Mls struct {
 // NewMls create a new client for the MLS Canada collector.
 func NewMls(s storage.DBInterface, c *http.Client) *Mls {
 	if s == nil {
-		s = storage.NewMemoryDB(cityIndex)
+		s, _ = storage.NewMemoryDB(cityIndex)
 	}
 
 	if c == nil {

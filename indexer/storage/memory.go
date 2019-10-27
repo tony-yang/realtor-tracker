@@ -82,14 +82,15 @@ type MemoryDB struct {
 // 		 MlsNumber: make(map[string]bool)
 // 	 }
 // }
-func NewMemoryDB(cityIndex map[string]*City) *MemoryDB {
-	return &MemoryDB{
+func NewMemoryDB(cityIndex map[string]*City) (*MemoryDB, error) {
+	m := &MemoryDB{
 		Mls:          make(map[string]*mls),
 		Property:     make(map[string]*property),
 		Photo:        make(map[string]*photo),
 		PriceHistory: make(map[string][]*priceHistory),
 		CityIndex:    cityIndex,
 	}
+	return m, nil
 }
 
 // CreateStorage for in-memory DB is a placeholder to comply with the DBInterface.
