@@ -192,6 +192,12 @@ func (d *SqliteDB) CreateStorage() error {
 
 // UpdateListing appends new pricing information for an existing listing record.
 func (d *SqliteDB) UpdateListing(p *mlspb.Property) error {
+	logrus.Debugf("update listing: mlsNumber = %s listing %v\n", p.MlsNumber, p)
+
+	if err := d.insertPriceHistory(p); err != nil {
+		return fmt.Errorf("failed to insert a price history with err: %v", err)
+	}
+
 	return nil
 }
 
