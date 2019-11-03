@@ -27,6 +27,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//indexer:all-srcs",
+        "//web:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

@@ -163,28 +163,33 @@ func (m *Mls) FetchListing() {
 
 	resp, err := m.client.PostForm(listingUrl, data)
 	if err != nil {
-		logrus.Error("http post form error:", err)
+		logrus.Error("HTTP post form error:", err)
 	}
 
 	defer resp.Body.Close()
 	bodyContent, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.Error("failed to read response:", err)
+		logrus.Error("Failed to read response:", err)
 	}
 
 	var listings *listings
 	err = json.Unmarshal(bodyContent, &listings)
 	if err != nil {
-		logrus.Fatalf("failed to parse the json response into listing: %v", err)
+		logrus.Fatalf("Failed to parse the json response into listing: %v", err)
 	}
 
 	properties := formatListing(listings)
 	for _, p := range properties {
 		err := m.DB.SaveNewListing(p)
 		if err != nil {
-			err = m.DB.UpdateListing(p)
-			if err != nil {
-				logrus.Errorf("failed to update listing: %v", err)
+			if strings.HasPrefix(err.Error(), "listing exists") {
+				logrus.Debugf("Failed to save new listing: %v", err)
+				err = m.DB.UpdateListing(p)
+				if err != nil {
+					logrus.Errorf("Failed to update listing: %v", err)
+				}
+			} else {
+				logrus.Errorf("Failed to save new listing: %v", err)
 			}
 		}
 	}

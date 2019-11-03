@@ -7,7 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//indexer/collector:go_default_library",
-        "//indexer/server:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -30,10 +29,8 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//indexer/client:all-srcs",
         "//indexer/collector:all-srcs",
         "//indexer/mls:all-srcs",
-        "//indexer/server:all-srcs",
         "//indexer/storage:all-srcs",
     ],
     tags = ["automanaged"],

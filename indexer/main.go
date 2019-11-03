@@ -3,27 +3,29 @@
 package main
 
 import (
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/tony-yang/realtor-tracker/indexer/collector"
-	"github.com/tony-yang/realtor-tracker/indexer/server"
 )
 
-func runCollectors() {
-	// each collector will run daily
-	for i := 0; i < 3; i++ {
-		for name, c := range collector.Collectors {
-			logrus.Infof("Running the '%s' collector...", name)
-			c.FetchListing()
-			time.Sleep(5 * time.Second)
-		}
+func runCollectors(wg *sync.WaitGroup) {
+	defer wg.Done()
+	for name, c := range collector.Collectors {
+		logrus.Infof("Running the %q collector...", name)
+		c.FetchListing()
+		time.Sleep(5 * time.Second)
+		logrus.Infof("%q finished collection.", name)
 	}
 }
 
 func main() {
-	logrus.Info("Indexer Main")
-	go runCollectors()
+	var wg sync.WaitGroup
 
-	server.StartServer()
+	logrus.Info("Indexer Main")
+	wg.Add(1)
+	go runCollectors(&wg)
+	wg.Wait()
+	logrus.Info("Indexer collection cycle finished successfully.")
 }

@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["client.go"],
-    importpath = "github.com/tony-yang/realtor-tracker/indexer/client",
+    importpath = "github.com/tony-yang/realtor-tracker/web/client",
     visibility = ["//visibility:private"],
     deps = [
         "//indexer/mls:go_default_library",

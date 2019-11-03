@@ -1,15 +1,13 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["server.go"],
-    importpath = "github.com/tony-yang/realtor-tracker/indexer/server",
+    srcs = ["main.go"],
+    importpath = "github.com/tony-yang/realtor-tracker/web",
     visibility = ["//visibility:public"],
     deps = [
-        "//indexer/collector:go_default_library",
-        "//indexer/mls:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/google.golang.org/grpc:go_default_library",
+        "//web/server:go_default_library",
     ],
 )
 
@@ -22,7 +20,17 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//web/client:all-srcs",
+        "//web/server:all-srcs",
+    ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "web",
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

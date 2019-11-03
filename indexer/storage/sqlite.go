@@ -30,7 +30,21 @@ func NewSqliteDB(dbPath string) (*SqliteDB, error) {
 	return &SqliteDB{db: database}, nil
 }
 
+func (d *SqliteDB) listingStatusExisted() bool {
+	rows, err := d.db.Query(`SELECT * FROM listingStatus`)
+	if err != nil {
+		return false
+	}
+	next := rows.Next()
+	rows.Close()
+	return next
+}
+
 func (d *SqliteDB) createListingStatusTable() error {
+	if d.listingStatusExisted() {
+		return nil
+	}
+
 	sqlStatement := `CREATE TABLE IF NOT EXISTS listingStatus (
 		statusId INTEGER PRIMARY KEY,
 		status TEXT UNIQUE)`
@@ -41,6 +55,7 @@ func (d *SqliteDB) createListingStatusTable() error {
 	if _, err := statement.Exec(); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
 
 	sqlStatement = `INSERT INTO listingStatus (status)
 			VALUES(?)`
@@ -60,6 +75,7 @@ func (d *SqliteDB) createListingStatusTable() error {
 	if _, err := statement.Exec("Closed"); err != nil {
 		return fmt.Errorf("error execute %q with value Closed: %v", sqlStatement, err)
 	}
+	statement.Close()
 	return nil
 }
 
@@ -75,6 +91,7 @@ func (d *SqliteDB) createCityTable() error {
 	if _, err := statement.Exec(); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
 
 	// statement, err = d.db.Prepare(`INSERT INTO city (name, state)
 	// 		VALUES(?, ?)`)
@@ -101,6 +118,7 @@ func (d *SqliteDB) createPropertyTable() error {
 	if _, err := statement.Exec(); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
 	return nil
 }
 
@@ -129,6 +147,7 @@ func (d *SqliteDB) createMlsTable() error {
 	if _, err := statement.Exec(); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
 	return nil
 }
 
@@ -144,6 +163,7 @@ func (d *SqliteDB) createPhotoTable() error {
 	if _, err := statement.Exec(); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
 	return nil
 }
 
@@ -160,6 +180,7 @@ func (d *SqliteDB) createPriceHistoryTable() error {
 	if _, err := statement.Exec(); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
 	return nil
 }
 
@@ -194,10 +215,19 @@ func (d *SqliteDB) CreateStorage() error {
 func (d *SqliteDB) UpdateListing(p *mlspb.Property) error {
 	logrus.Debugf("update listing: mlsNumber = %s listing %v\n", p.MlsNumber, p)
 
-	if err := d.insertPriceHistory(p); err != nil {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %v", err)
+	}
+
+	if err := d.insertPriceHistory(tx, p); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to insert a price history with err: %v", err)
 	}
 
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to save new listing: %v", err)
+	}
 	return nil
 }
 
@@ -206,7 +236,9 @@ func (d *SqliteDB) listingExisted(mlsNumber string) bool {
 	if err != nil {
 		return false
 	}
-	return rows.Next()
+	next := rows.Next()
+	rows.Close()
+	return next
 }
 
 func (d *SqliteDB) cityExisted(city, state string) bool {
@@ -214,23 +246,29 @@ func (d *SqliteDB) cityExisted(city, state string) bool {
 	if err != nil {
 		return false
 	}
-	return rows.Next()
+	next := rows.Next()
+	rows.Close()
+	return next
 }
 
-func (d *SqliteDB) insertCity(city, state string) error {
+func (d *SqliteDB) insertCity(tx *sql.Tx, city, state string) error {
 	sqlStatement := `INSERT INTO city (name, state)
 			VALUES(?, ?)`
 	statement, err := d.db.Prepare(sqlStatement)
 	if err != nil {
 		return fmt.Errorf("error prepare the insert city: %v", err)
 	}
-	if _, err := statement.Exec(city, state); err != nil {
+	s := tx.Stmt(statement)
+	if _, err := s.Exec(city, state); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
+	s.Close()
+
 	return nil
 }
 
-func (d *SqliteDB) insertProperty(p *mlspb.Property) error {
+func (d *SqliteDB) insertProperty(tx *sql.Tx, p *mlspb.Property) error {
 	sqlStatement := `INSERT INTO property (
 			address, zipcode, latitude, longitude, city, state)
 			VALUES(?, ?, ?, ?, ?, ?)`
@@ -238,13 +276,16 @@ func (d *SqliteDB) insertProperty(p *mlspb.Property) error {
 	if err != nil {
 		return fmt.Errorf("error prepare the insert property: %v", err)
 	}
-	if _, err := statement.Exec(p.Address, p.Zipcode, p.Latitude, p.Longitude, p.City, p.State); err != nil {
+	s := tx.Stmt(statement)
+	if _, err := s.Exec(p.Address, p.Zipcode, p.Latitude, p.Longitude, p.City, p.State); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
+	s.Close()
 	return nil
 }
 
-func (d *SqliteDB) insertMls(p *mlspb.Property) error {
+func (d *SqliteDB) insertMls(tx *sql.Tx, p *mlspb.Property) error {
 	sqlStatement := `INSERT INTO mls (
 			mlsNumber, mlsId, mlsUrl, bathrooms, bedrooms, landSize, parking,
 			publicRemark, stories, propertyType, availableTimestamp, statusId, source, address)
@@ -254,43 +295,52 @@ func (d *SqliteDB) insertMls(p *mlspb.Property) error {
 	if err != nil {
 		return fmt.Errorf("error prepare the insert mls: %v", err)
 	}
-	if _, err := statement.Exec(
+	s := tx.Stmt(statement)
+	if _, err := s.Exec(
 		p.MlsNumber, p.MlsId, p.MlsUrl, p.Bathrooms, p.Bedrooms, p.LandSize, strings.Join(p.Parking, ";"),
 		p.PublicRemarks, p.Stories, p.PropertyType, p.ListTimestamp, 1, p.Source, p.Address); err != nil {
 		return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 	}
+	statement.Close()
+	s.Close()
 	return nil
 }
 
-func (d *SqliteDB) insertPhoto(p *mlspb.Property) error {
+func (d *SqliteDB) insertPhoto(tx *sql.Tx, p *mlspb.Property) error {
+	sqlStatement := `INSERT INTO photo (
+			photoUrl, mlsNumber)
+			VALUES(?, ?)`
+	statement, err := d.db.Prepare(sqlStatement)
+	if err != nil {
+		return fmt.Errorf("error prepare the insert photo: %v", err)
+	}
+	s := tx.Stmt(statement)
 	for _, ph := range p.PhotoUrl {
-		sqlStatement := `INSERT INTO photo (
-				photoUrl, mlsNumber)
-				VALUES(?, ?)`
-		statement, err := d.db.Prepare(sqlStatement)
-		if err != nil {
-			return fmt.Errorf("error prepare the insert photo: %v", err)
-		}
-		if _, err := statement.Exec(ph, p.MlsNumber); err != nil {
+		if _, err := s.Exec(ph, p.MlsNumber); err != nil {
 			return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 		}
 	}
+	statement.Close()
+	s.Close()
 	return nil
 }
 
-func (d *SqliteDB) insertPriceHistory(p *mlspb.Property) error {
+func (d *SqliteDB) insertPriceHistory(tx *sql.Tx, p *mlspb.Property) error {
+	sqlStatement := `INSERT INTO priceHistory (
+			mlsNumber, price, priceTimestamp)
+			VALUES(?, ?, ?)`
+	statement, err := d.db.Prepare(sqlStatement)
+	if err != nil {
+		return fmt.Errorf("error prepare insert statement to photo: %s", err)
+	}
+	s := tx.Stmt(statement)
 	for _, pr := range p.Price {
-		sqlStatement := `INSERT INTO priceHistory (
-				mlsNumber, price, priceTimestamp)
-				VALUES(?, ?, ?)`
-		statement, err := d.db.Prepare(sqlStatement)
-		if err != nil {
-			return fmt.Errorf("error prepare insert statement to photo: %s", err)
-		}
-		if _, err := statement.Exec(p.MlsNumber, pr.Price, pr.Timestamp); err != nil {
+		if _, err := s.Exec(p.MlsNumber, pr.Price, pr.Timestamp); err != nil {
 			return fmt.Errorf("error execute %q: %v", sqlStatement, err)
 		}
 	}
+	statement.Close()
+	s.Close()
 	return nil
 }
 
@@ -302,32 +352,46 @@ func (d *SqliteDB) SaveNewListing(p *mlspb.Property) error {
 
 	logrus.Debugf("save mls: %q", p.MlsNumber)
 	if d.listingExisted(p.MlsNumber) {
-		return fmt.Errorf("listing %s exists", p.MlsNumber)
+		return fmt.Errorf("listing exists: %s", p.MlsNumber)
 	}
+	tx, err := d.db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %v", err)
+	}
+
 	city := strings.ToLower(p.City)
 	state := strings.ToLower(p.State)
 	if !d.cityExisted(city, state) {
-		if err := d.insertCity(city, state); err != nil {
+		if err := d.insertCity(tx, city, state); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("failed to insert a new city '%s, %s' with err: %v", city, state, err)
 		}
 	}
 
-	if err := d.insertProperty(p); err != nil {
+	if err := d.insertProperty(tx, p); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to insert a new property with err: %v", err)
 	}
 
-	if err := d.insertMls(p); err != nil {
+	if err := d.insertMls(tx, p); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to insert a new mls listing %q with err: %v", p.MlsNumber, err)
 	}
 
-	if err := d.insertPhoto(p); err != nil {
+	if err := d.insertPhoto(tx, p); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to insert a listing photo with err: %v", err)
 	}
 
-	if err := d.insertPriceHistory(p); err != nil {
+	if err := d.insertPriceHistory(tx, p); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to insert a price history with err: %v", err)
 	}
 
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to save new listing: %v", err)
+	}
 	return nil
 }
 
@@ -345,6 +409,7 @@ func (d *SqliteDB) ReadListings() (*mlspb.Listings, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var (
 			mlsNumber, mlsID, mlsURL, bathrooms, bedrooms, landSize, publicRemark, stories, propertyType, status, source, address, zipcode, city, state, parking string
