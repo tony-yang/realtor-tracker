@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	port = 80
+	port = 9000
 )
 
 type indexerServer struct{}

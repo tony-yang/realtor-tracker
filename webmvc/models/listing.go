@@ -1,13 +1,14 @@
 package models
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"strconv"
+	"time"
 
+	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 	"github.com/tony-yang/realtor-tracker/webmvc/base"
 
-	_ "github.com/mattn/go-sqlite3"
+	"google.golang.org/grpc"
 )
 
 type Listing struct {
@@ -54,83 +55,24 @@ func (l *Listing) ReadListing(mlsNumber string) (map[string]Listing, error) {
 	}
 }
 
-func ReadAllListings(database *sql.DB) (map[string]Listing, error) {
-	listings := make(map[string]Listing)
+func (l *Listing) ReadAllListings() (*mlspb.Listings, error) {
+	addr := "127.0.0.1:9000"
+	opts := []grpc.DialOption{grpc.WithInsecure()}
 
-	rows, err := database.Query("SELECT * FROM mls")
+	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("error query the mls table: %s", err)
+		return nil, err
 	}
-	var (
-		mlsNumber     int
-		mlsId         int
-		mlsUrl        string
-		bathrooms     string
-		bedrooms      string
-		landSize      string
-		parking       string
-		publicRemark  string
-		stories       string
-		propertyType  string
-		listTimestamp int
-		statusId      int
-	)
-	for rows.Next() {
-		rows.Scan(&mlsNumber, &mlsId, &mlsUrl, &bathrooms, &bedrooms, &landSize,
-			&parking, &publicRemark, &stories, &propertyType, &listTimestamp, &statusId)
-		listings[strconv.Itoa(mlsNumber)] = Listing{
-			Bathrooms:     bathrooms,
-			Bedrooms:      bedrooms,
-			LandSize:      landSize,
-			MlsId:         strconv.Itoa(mlsId),
-			MlsUrl:        mlsUrl,
-			Parking:       parking,
-			PublicRemarks: publicRemark,
-			Stories:       stories,
-			PropertyType:  propertyType,
-			ListTimestamp: strconv.Itoa(listTimestamp),
-		}
-		fmt.Println("#### listings", listings[strconv.Itoa(mlsNumber)])
-	}
+	defer conn.Close()
+	c := mlspb.NewMlsServiceClient(conn)
 
-	rows, err = database.Query("SELECT * FROM property")
-	if err != nil {
-		return nil, fmt.Errorf("error query the property table: %s", err)
-	}
-	var (
-		address string
-	)
-	for rows.Next() {
-		rows.Scan(&address, &mlsNumber)
-		// listings[strconv.Itoa(mlsNumber)].Address = address
-		fmt.Printf("property: mlsNum = %s address = %s\n", strconv.Itoa(mlsNumber), address)
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	rows, err = database.Query("SELECT * FROM photo")
+	request := &mlspb.Request{}
+	listings, err := c.GetListing(ctx, request)
 	if err != nil {
-		return nil, fmt.Errorf("error query the photo table: %s", err)
-	}
-	var (
-		photoUrl string
-	)
-	for rows.Next() {
-		rows.Scan(&photoUrl, &mlsNumber)
-		// listings[strconv.Itoa(mlsNumber)].PhotoUrl = photoUrl
-		fmt.Printf("photo: mlsNum = %s photoUrl = %s\n", strconv.Itoa(mlsNumber), photoUrl)
-	}
-
-	rows, err = database.Query("SELECT * FROM priceHistory")
-	if err != nil {
-		return nil, fmt.Errorf("error query the priceHistory table: %s", err)
-	}
-	var (
-		price          string
-		priceTimestamp int
-	)
-	for rows.Next() {
-		rows.Scan(&mlsNumber, &price, &priceTimestamp)
-		// listings[strconv.Itoa(mlsNumber)].Price = price
-		fmt.Printf("price: mlsNum = %s price =  %s time = %d\n", strconv.Itoa(mlsNumber), price, priceTimestamp)
+		return nil, fmt.Errorf("Failed to get read all listings: %v", err)
 	}
 
 	return listings, nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	mlspb "github.com/tony-yang/realtor-tracker/indexer/mls"
 	"github.com/tony-yang/realtor-tracker/webmvc/base"
 	"github.com/tony-yang/realtor-tracker/webmvc/models"
 )
@@ -16,8 +17,16 @@ type Listing struct {
 
 func (l *Listing) Get(subpath string, queries map[string]string) *base.HttpResponse {
 	fmt.Println("subpath =", subpath, "queries =", queries)
-	bodyContent, err := l.ReadListing(subpath)
 	statusCode := http.StatusOK
+	var bodyContent *mlspb.Listings
+	var err error
+
+	if subpath != "" {
+		// bodyContent, err = l.ReadListing(subpath)
+		fmt.Println("given subpath query individual")
+	} else {
+		bodyContent, err = l.ReadAllListings()
+	}
 	if err != nil {
 		base.Error("error fetch mls listing:", err)
 		statusCode = http.StatusInternalServerError

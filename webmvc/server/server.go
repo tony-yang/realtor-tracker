@@ -1,4 +1,4 @@
-package webmvc
+package server
 
 import (
 	"fmt"
@@ -59,6 +59,6 @@ func (s *NewServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func CreateNewServer() *NewServer {
 	routes := base.CreateNewRouter()
-	server := &NewServer{routes}
-	return server
+	s := &NewServer{routes}
+	return s
 }
