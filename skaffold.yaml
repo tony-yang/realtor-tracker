@@ -1,0 +1,16 @@
+apiVersion: skaffold/v1
+kind: Config
+metadata:
+  name: realtor-tracker
+build:
+  artifacts:
+  - image: indexer
+    context: indexer
+  - image: listing
+    context: listing
+  - image: webmvc
+    context: webmvc
+deploy:
+  kubectl:
+    manifests:
+    - kubernetes-mmanifests/**.yaml

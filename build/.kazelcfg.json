@@ -1,5 +1,0 @@
-{
-  "GoPrefix": "github.com/tony-yang/realtor-tracker",
-  "AddSourcesRules": true,
-  "SkippedPaths": ["^webmvc/|^vendor|^build"]
-}

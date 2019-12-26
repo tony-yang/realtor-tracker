@@ -1,0 +1,12 @@
+FROM golang:1.13-buster
+RUN apt-get update -qy \
+ && apt-get install -qy \
+    build-essential \
+    protobuf-compiler \
+ && rm -rf /var/lib/apt/lists/* \
+ && go get -u github.com/golang/protobuf/protoc-gen-go
+
+ENV PROJECT github.com/tony-yang/realtor-tracker
+WORKDIR /go/src/$PROJECT
+
+ENV CGO_ENABLED 0
